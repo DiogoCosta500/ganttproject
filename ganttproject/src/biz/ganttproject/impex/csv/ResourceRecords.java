@@ -24,6 +24,7 @@ import com.google.common.collect.Sets;
 import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
+import net.sourceforge.ganttproject.resource.HumanResourceGroup;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -39,7 +40,7 @@ import java.util.List;
 class ResourceRecords extends RecordGroup {
 
   public enum ResourceFields {
-    ID("tableColID"), NAME("tableColResourceName"), EMAIL("tableColResourceEMail"), PHONE("tableColResourcePhone"), ROLE("tableColResourceRole");
+    ID("tableColID"), NAME("tableColResourceName"), EMAIL("tableColResourceEMail"), PHONE("tableColResourcePhone"), GROUP("tableColResourceGroup") ,ROLE("tableColResourceRole");
 
     private final String text;
 
@@ -86,11 +87,13 @@ class ResourceRecords extends RecordGroup {
       Role newRole = myRoleManager.getProjectRoleSet().createRole(role);
       role = newRole.getPersistentID();
     }
+    String group = resourceManager.getDefaultGroup().getName();
     HumanResource hr = resourceManager.newResourceBuilder()
         .withName(getOrNull(record, ResourceFields.NAME.toString()))
         .withID(getOrNull(record, ResourceFields.ID.toString()))
         .withEmail(getOrNull(record, ResourceFields.EMAIL.toString()))
         .withPhone(getOrNull(record, ResourceFields.PHONE.toString()))
+        .withGroup(group)
         .withRole(role)
         .withStandardRate(getOrNull(record, ResourceDefaultColumn.STANDARD_RATE.getName()))
         .build();

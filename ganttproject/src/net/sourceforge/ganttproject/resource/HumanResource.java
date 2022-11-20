@@ -54,6 +54,8 @@ public class HumanResource implements CustomPropertyHolder {
 
   private String email = "";
 
+  private HumanResourceGroup myGroup;
+
   private Role myRole;
 
   private String description;
@@ -131,6 +133,7 @@ public class HumanResource implements CustomPropertyHolder {
     return id;
   }
 
+  public HumanResourceManager getMyManager(){return myManager;}
   public void setName(String name) {
     this.name = name;
     fireResourceChanged();
@@ -184,6 +187,30 @@ public class HumanResource implements CustomPropertyHolder {
     }
     return myRole;
   }
+
+  public HumanResourceGroup getGroup() {
+    if (myGroup == null) {
+      System.err.println("[HumanResource] getGroup(): I have no group :( name=" + getName());
+    }
+    return myGroup;
+  }
+
+  public void setGroup(HumanResourceGroup group) {
+    myGroup = group;
+    fireResourceChanged();
+  }
+
+  /*public String getGroup() {
+    if (myGroup == null) {
+      System.err.println("[HumanResource] getGroup(): I have no group :( name=" + getName());
+    }
+    return myGroup;
+  }
+
+  public void setGroup(String group) {
+    myGroup = group;
+    fireResourceChanged();
+  }*/
 
   public void addDaysOff(GanttDaysOff gdo) {
     myDaysOffList.addElement(gdo);

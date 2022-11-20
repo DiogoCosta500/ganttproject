@@ -25,6 +25,7 @@ import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
+import javax.annotation.Resource;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -44,6 +45,7 @@ public class HumanResourceManager {
     String myEmail;
     String myPhone;
     String myRole;
+    String myGroup;
     BigDecimal myStandardRate;
 
     public ResourceBuilder withName(String name) {
@@ -71,6 +73,11 @@ public class HumanResourceManager {
       return this;
     }
 
+    public ResourceBuilder withGroup(String group){
+      myGroup = group;
+      return this;
+    }
+
     public ResourceBuilder withStandardRate(String rate) {
       if (rate != null) {
         try {
@@ -89,7 +96,12 @@ public class HumanResourceManager {
 
   private List<HumanResource> resources = new ArrayList<HumanResource>();
 
+  private List<HumanResourceGroup> resourceGroups = new ArrayList<>();
+
+  private HumanResourceGroup myDefaultGroup = new HumanResourceGroup(this,"none");
   private int nextFreeId = 0;
+
+  private int nextFreeGroupId = 0;
 
   private final Role myDefaultRole;
 
@@ -105,6 +117,8 @@ public class HumanResourceManager {
     myDefaultRole = defaultRole;
     myCustomPropertyManager = customPropertyManager;
     myRoleManager = roleManager;
+    //myDefaultGroup.setName("None");
+    addGroup(myDefaultGroup);
   }
 
   public HumanResource newHumanResource() {
@@ -122,6 +136,7 @@ public class HumanResourceManager {
           return null;
         }
         HumanResource result = new HumanResource(myName, myID, HumanResourceManager.this);
+
         Role role = null;
         if (myRole != null && myRoleManager != null) {
           role = myRoleManager.getRole(myRole);
@@ -129,6 +144,16 @@ public class HumanResourceManager {
         if (role == null) {
           role = myDefaultRole;
         }
+
+        HumanResourceGroup group = null;
+        if (myGroup != null && resourceGroups.size() > 1) {
+          group = getGroup(myGroup);
+        }
+        if (group == null) {
+          group = myDefaultGroup;
+        }
+        result.setGroup(group);
+
         result.setRole(role);
         result.setPhone(myPhone);
         result.setMail(myEmail);
@@ -139,9 +164,28 @@ public class HumanResourceManager {
 
     };
   }
+
+  public HumanResourceGroup getGroup(String groupName){
+    for(int i = 0; i < resourceGroups.size(); i++){
+      HumanResourceGroup test = resourceGroups.get(i);
+      if(test.getName().equals(groupName))
+        return test;
+    }
+    return null;
+  }
+
+  public Iterator<HumanResourceGroup> getGroups(){
+    return resourceGroups.iterator();
+  }
+  public int getNumGroups(){
+    return resourceGroups.size();
+  }
+  public HumanResourceGroup getDefaultGroup(){ return myDefaultGroup; }
+
   public HumanResource create(String name, int i) {
     HumanResource hr = new HumanResource(name, i, this);
     hr.setRole(myDefaultRole);
+    hr.setGroup(myDefaultGroup);
     add(hr);
     return hr;
   }
@@ -155,6 +199,16 @@ public class HumanResourceManager {
     }
     resources.add(resource);
     fireResourceAdded(resource);
+  }
+
+  public void addGroup(HumanResourceGroup resourceGroup) {
+    if (resourceGroup.getId() == -1) {
+      resourceGroup.setId(nextFreeGroupId);
+    }
+    if (resourceGroup.getId() >= nextFreeGroupId) {
+      nextFreeGroupId = resourceGroup.getId() + 1;
+    }
+    resourceGroups.add(resourceGroup);
   }
 
   public HumanResource getById(int id) {
@@ -270,6 +324,7 @@ public class HumanResourceManager {
       if (nativeHR == null) {
         nativeHR = new HumanResource(foreignHR.getName(), nextFreeId + createdResources.size(), this);
         nativeHR.setRole(myDefaultRole);
+        nativeHR.setGroup(myDefaultGroup);
         createdResources.add(nativeHR);
       }
       foreign2native.put(foreignHR, nativeHR);

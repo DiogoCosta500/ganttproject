@@ -36,8 +36,11 @@ import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.taskproperties.CustomColumnsPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
+import net.sourceforge.ganttproject.resource.HumanResourceGroup;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
+
+import java.util.Iterator;
 
 import javax.swing.*;
 import java.awt.*;
@@ -58,27 +61,43 @@ public class GanttDialogPerson {
   private final StringOption myPhoneField = new DefaultStringOption("colPhone");
   private final StringOption myMailField = new DefaultStringOption("colMail");
   private final MoneyOption myStandardRateField = new DefaultMoneyOption("colStandardRate");
+  private final EnumerationOption myGroupField;
   private final EnumerationOption myRoleField;
-  private final GPOptionGroup myGroup;
+  private final GPOptionGroup resourceForm;
   private GPOptionGroup myRateGroup;
   private final UIFacade myUIFacade;
   private final CustomPropertyManager myCustomPropertyManager;
+
+  private final GPOptionGroup groupAddForm;
+
+  private final StringOption newGroupNameField = new DefaultStringOption("colGroupName");
 
 
   public GanttDialogPerson(CustomPropertyManager customPropertyManager, UIFacade uiFacade, HumanResource person) {
     myCustomPropertyManager = customPropertyManager;
     myUIFacade = uiFacade;
     this.person = person;
+
+    String[] groupFieldValues = new String[person.getMyManager().getNumGroups()];
+    Iterator<HumanResourceGroup> itGroups = person.getMyManager().getGroups();
+    int g = 0;
+    while(itGroups.hasNext()) {
+      groupFieldValues[g++] = itGroups.next().getName();
+    }
+
     Role[] enabledRoles = RoleManager.Access.getInstance().getEnabledRoles();
     String[] roleFieldValues = new String[enabledRoles.length];
     for (int i = 0; i < enabledRoles.length; i++) {
       roleFieldValues[i] = enabledRoles[i].getName();
     }
-    myRoleField = new DefaultEnumerationOption<Object>("colRole", roleFieldValues);
-    myGroup = new GPOptionGroup("", new GPOption[] { myNameField, myPhoneField, myMailField, myRoleField });
-    myGroup.setTitled(false);
 
+    myGroupField = new DefaultEnumerationOption<Object>("colGroup", groupFieldValues);
+    myRoleField = new DefaultEnumerationOption<Object>("colRole", roleFieldValues);
+    resourceForm = new GPOptionGroup("", new GPOption[] { myNameField, myPhoneField, myMailField, myGroupField, myRoleField});
+    resourceForm.setTitled(false);
     myRateGroup = new GPOptionGroup("resourceRate", myStandardRateField);
+    groupAddForm = new GPOptionGroup("", new GPOption[] { newGroupNameField });
+    groupAddForm.setTitled(false);
   }
 
   public boolean result() {
@@ -92,14 +111,14 @@ public class GanttDialogPerson {
       OkAction okAction = new OkAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-          myGroup.commit();
+          resourceForm.commit();
           okButtonActionPerformed();
         }
       };
       CancelAction cancelAction = new CancelAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-          myGroup.rollback();
+          resourceForm.rollback();
           change = false;
         }
       };
@@ -111,11 +130,17 @@ public class GanttDialogPerson {
     myNameField.setValue(person.getName());
     myPhoneField.setValue(person.getPhone());
     myMailField.setValue(person.getMail());
+    myStandardRateField.setValue(person.getStandardPayRate());
+
+    HumanResourceGroup group = person.getGroup();
+    if(group != null) {
+      myGroupField.setValue(group.getName());
+    }
+
     Role role = person.getRole();
     if (role != null) {
       myRoleField.setValue(role.getName());
     }
-    myStandardRateField.setValue(person.getStandardPayRate());
   }
 
   private Component getComponent() {
@@ -127,8 +152,10 @@ public class GanttDialogPerson {
       }
     };
     builder.setI18N(i18n);
-    final JComponent mainPage = builder.buildPlanePage(new GPOptionGroup[] { myGroup, myRateGroup });
+    final JComponent mainPage = builder.buildPlanePage(new GPOptionGroup[] {resourceForm, myRateGroup });
     mainPage.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+    final JComponent groupPage = builder.buildPlanePage(new GPOptionGroup[] {groupAddForm});
+    groupPage.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
     tabbedPane = new JTabbedPane();
     tabbedPane.addTab(language.getText("general"), new ImageIcon(getClass().getResource("/icons/properties_16.gif")),
         mainPage);
@@ -138,34 +165,8 @@ public class GanttDialogPerson {
         myUIFacade.getResourceTree().getVisibleFields());
     tabbedPane.addTab(language.getText("customColumns"), new ImageIcon(getClass().getResource("/icons/custom.gif")),
         customColumnsPanel.getComponent());
-    // mainPage.requestDefaultFocus();
-    // final FocusTraversalPolicy defaultPolicy =
-    // mainPage.getFocusTraversalPolicy();
-    // FocusTraversalPolicy customPolicy = new FocusTraversalPolicy() {
-    // public Component getComponentAfter(Container aContainer, Component
-    // aComponent) {
-    // return defaultPolicy.getComponentAfter(aContainer, aComponent);
-    // }
-    //
-    // public Component getComponentBefore(Container aContainer, Component
-    // aComponent) {
-    // return defaultPolicy.getComponentBefore(aContainer, aComponent);
-    // }
-    //
-    // public Component getFirstComponent(Container aContainer) {
-    // return defaultPolicy.getFirstComponent(aContainer);
-    // }
-    //
-    // public Component getLastComponent(Container aContainer) {
-    // return defaultPolicy.getLastComponent(aContainer);
-    // }
-    //
-    // public Component getDefaultComponent(Container aContainer) {
-    // return mainPage;
-    // }
-    // };
-    // //mainPage.setFocusCycleRoot(true);
-    // mainPage.setFocusTraversalPolicy(customPolicy);
+    tabbedPane.addTab(language.getText("group"), new ImageIcon(getClass().getResource("/icons/properties_16.gif")),
+            new GanttDialogGroup().createGroupPanel());
     tabbedPane.addFocusListener(new FocusAdapter() {
       boolean isFirstTime = true;
 
@@ -202,6 +203,10 @@ public class GanttDialogPerson {
     person.setName(myNameField.getValue());
     person.setMail(myMailField.getValue());
     person.setPhone(myPhoneField.getValue());
+    HumanResourceGroup group = person.getMyManager().getGroup(myGroupField.getValue());
+    if(group != null) {
+      person.setGroup(group);
+    }
     Role role = findRole(myRoleField.getValue());
     if (role != null) {
       person.setRole(role);
@@ -224,7 +229,6 @@ public class GanttDialogPerson {
     }
     return null;
   }
-
   private DefaultDateIntervalModel myDaysOffModel;
 
   public JPanel constructDaysOffPanel() {

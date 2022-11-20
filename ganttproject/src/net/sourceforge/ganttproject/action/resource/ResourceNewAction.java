@@ -60,6 +60,7 @@ public class ResourceNewAction extends ResourceAction {
     }
     final HumanResource resource = getManager().newHumanResource();
     resource.setRole(myRoleManager.getDefaultRole());
+    resource.setGroup(getManager().getDefaultGroup());
     GanttDialogPerson dp = new GanttDialogPerson(getManager().getCustomPropertyManager(), myUIFacade, resource);
     dp.setVisible(true);
     if (dp.result()) {
