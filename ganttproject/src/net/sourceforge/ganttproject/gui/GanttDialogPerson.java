@@ -56,7 +56,6 @@ public class GanttDialogPerson {
   private static final GanttLanguage language = GanttLanguage.getInstance();
 
   private JTabbedPane tabbedPane;
-
   private final StringOption myNameField = new DefaultStringOption("name");
   private final StringOption myPhoneField = new DefaultStringOption("colPhone");
   private final StringOption myMailField = new DefaultStringOption("colMail");
@@ -68,10 +67,6 @@ public class GanttDialogPerson {
   private final UIFacade myUIFacade;
   private final CustomPropertyManager myCustomPropertyManager;
 
-  private final GPOptionGroup groupAddForm;
-
-  private final StringOption newGroupNameField = new DefaultStringOption("colGroupName");
-
 
   public GanttDialogPerson(CustomPropertyManager customPropertyManager, UIFacade uiFacade, HumanResource person) {
     myCustomPropertyManager = customPropertyManager;
@@ -79,7 +74,7 @@ public class GanttDialogPerson {
     this.person = person;
 
     String[] groupFieldValues = new String[person.getMyManager().getNumGroups()];
-    Iterator<HumanResourceGroup> itGroups = person.getMyManager().getGroups();
+    Iterator<HumanResourceGroup> itGroups = person.getMyManager().getGroupsIt();
     int g = 0;
     while(itGroups.hasNext()) {
       groupFieldValues[g++] = itGroups.next().getName();
@@ -96,8 +91,6 @@ public class GanttDialogPerson {
     resourceForm = new GPOptionGroup("", new GPOption[] { myNameField, myPhoneField, myMailField, myGroupField, myRoleField});
     resourceForm.setTitled(false);
     myRateGroup = new GPOptionGroup("resourceRate", myStandardRateField);
-    groupAddForm = new GPOptionGroup("", new GPOption[] { newGroupNameField });
-    groupAddForm.setTitled(false);
   }
 
   public boolean result() {
@@ -131,7 +124,6 @@ public class GanttDialogPerson {
     myPhoneField.setValue(person.getPhone());
     myMailField.setValue(person.getMail());
     myStandardRateField.setValue(person.getStandardPayRate());
-
     HumanResourceGroup group = person.getGroup();
     if(group != null) {
       myGroupField.setValue(group.getName());
@@ -154,8 +146,7 @@ public class GanttDialogPerson {
     builder.setI18N(i18n);
     final JComponent mainPage = builder.buildPlanePage(new GPOptionGroup[] {resourceForm, myRateGroup });
     mainPage.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-    final JComponent groupPage = builder.buildPlanePage(new GPOptionGroup[] {groupAddForm});
-    groupPage.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
     tabbedPane = new JTabbedPane();
     tabbedPane.addTab(language.getText("general"), new ImageIcon(getClass().getResource("/icons/properties_16.gif")),
         mainPage);
@@ -166,10 +157,9 @@ public class GanttDialogPerson {
     tabbedPane.addTab(language.getText("customColumns"), new ImageIcon(getClass().getResource("/icons/custom.gif")),
         customColumnsPanel.getComponent());
     tabbedPane.addTab(language.getText("group"), new ImageIcon(getClass().getResource("/icons/properties_16.gif")),
-            new GanttDialogGroup().createGroupPanel());
+            new GanttDialogGroup(person.getMyManager()).createGroupPanel());
     tabbedPane.addFocusListener(new FocusAdapter() {
       boolean isFirstTime = true;
-
       @Override
       public void focusGained(FocusEvent e) {
         if (isFirstTime) {
@@ -184,15 +174,16 @@ public class GanttDialogPerson {
   }
 
   private void okButtonActionPerformed() {
+    // person ID is -1 when it is new one
+    // i.e. before the Person dialog is closed
     if (person.getId() != -1) {
-      // person ID is -1 when it is new one
-      // i.e. before the Person dialog is closed
       myUIFacade.getUndoManager().undoableEdit("Resource properties changed", new Runnable() {
         @Override
         public void run() {
           applyChanges();
         }
       });
+
     } else {
       applyChanges();
     }

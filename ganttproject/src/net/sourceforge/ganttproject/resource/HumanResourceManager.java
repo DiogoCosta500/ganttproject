@@ -25,7 +25,6 @@ import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
-import javax.annotation.Resource;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -98,7 +97,7 @@ public class HumanResourceManager {
 
   private List<HumanResourceGroup> resourceGroups = new ArrayList<>();
 
-  private HumanResourceGroup myDefaultGroup = new HumanResourceGroup(this,"none");
+  private HumanResourceGroup myDefaultGroup = new HumanResourceGroup("none", this);
   private int nextFreeId = 0;
 
   private int nextFreeGroupId = 0;
@@ -117,7 +116,6 @@ public class HumanResourceManager {
     myDefaultRole = defaultRole;
     myCustomPropertyManager = customPropertyManager;
     myRoleManager = roleManager;
-    //myDefaultGroup.setName("None");
     addGroup(myDefaultGroup);
   }
 
@@ -166,6 +164,7 @@ public class HumanResourceManager {
   }
 
   public HumanResourceGroup getGroup(String groupName){
+    if(groupName == null) return null;
     for(int i = 0; i < resourceGroups.size(); i++){
       HumanResourceGroup test = resourceGroups.get(i);
       if(test.getName().equals(groupName))
@@ -174,11 +173,30 @@ public class HumanResourceManager {
     return null;
   }
 
-  public Iterator<HumanResourceGroup> getGroups(){
+  public HumanResource getResource(String resourceName){
+    if(resourceName == null) return null;
+    for(int i = 0; i < resources.size(); i++){
+      HumanResource test = resources.get(i);
+      if(test.getName().equals(resourceName))
+        return test;
+    }
+    return null;
+  }
+
+  public void makeResourceGroupLeader(HumanResource leader, HumanResourceGroup group){
+    leader.setGroup(group);
+    group.setLeader(leader);
+  }
+
+  public Iterator<HumanResourceGroup> getGroupsIt(){
     return resourceGroups.iterator();
   }
+  public Iterator<HumanResource> getResourcesIt() {return resources.iterator(); }
   public int getNumGroups(){
     return resourceGroups.size();
+  }
+  public int getNumResources(){
+    return resources.size();
   }
   public HumanResourceGroup getDefaultGroup(){ return myDefaultGroup; }
 
@@ -202,7 +220,7 @@ public class HumanResourceManager {
   }
 
   public void addGroup(HumanResourceGroup resourceGroup) {
-    if (resourceGroup.getId() == -1) {
+    if ( resourceGroup.getId() == 0 ) {
       resourceGroup.setId(nextFreeGroupId);
     }
     if (resourceGroup.getId() >= nextFreeGroupId) {
@@ -210,6 +228,28 @@ public class HumanResourceManager {
     }
     resourceGroups.add(resourceGroup);
   }
+
+  public void removeGroup(HumanResourceGroup resourceGroup){
+    if(resourceGroup.getId() > 0){
+      resourceGroups.remove(resourceGroup);
+    }
+  }
+
+  public void removeGroup(String groupName){
+    int index = findGroup(groupName);
+    if(index > 0){ // First index is for none Group
+      resourceGroups.remove(index);
+    }
+  }
+
+  private int findGroup(String groupName){
+    for(int i=0; i < resourceGroups.size(); i++){
+      if(groupName.equals(resourceGroups.get(i).getName()))
+        return i;
+    }
+    return -1;
+  }
+
 
   public HumanResource getById(int id) {
     // Linear search is not really efficient, but we do not have so many
@@ -314,6 +354,7 @@ public class HumanResourceManager {
 
   }
 
+  // VER SE É PRECISO ATUALIZAR
   public Map<HumanResource, HumanResource> importData(HumanResourceManager hrManager, HumanResourceMerger merger) {
     Map<HumanResource, HumanResource> foreign2native = new HashMap<HumanResource, HumanResource>();
     List<HumanResource> foreignResources = hrManager.getResources();

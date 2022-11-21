@@ -200,18 +200,6 @@ public class HumanResource implements CustomPropertyHolder {
     fireResourceChanged();
   }
 
-  /*public String getGroup() {
-    if (myGroup == null) {
-      System.err.println("[HumanResource] getGroup(): I have no group :( name=" + getName());
-    }
-    return myGroup;
-  }
-
-  public void setGroup(String group) {
-    myGroup = group;
-    fireResourceChanged();
-  }*/
-
   public void addDaysOff(GanttDaysOff gdo) {
     myDaysOffList.addElement(gdo);
     fireResourceChanged();
