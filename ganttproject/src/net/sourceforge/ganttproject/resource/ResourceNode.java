@@ -64,6 +64,10 @@ public class ResourceNode extends ResourceTableNode {
     return resource.getMail();
   }
 
+  public String getGroupName(){
+    return resource.getGroup().getName();
+  }
+
   public void setDefaultRole(Role defRole) {
     resource.setRole(defRole);
   }
@@ -79,6 +83,7 @@ public class ResourceNode extends ResourceTableNode {
     case ROLE: return getDefaultRole();
     case EMAIL: return getEMail();
     case PHONE: return getPhone();
+    case GROUP: return getGroupName();
     case STANDARD_RATE: return getResource().getStandardPayRate();
     default: return "";
     }

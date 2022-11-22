@@ -240,7 +240,6 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
     @Override
     public void setRoleForAssignment(Role role) {
       myRoleForAssignment = role;
-
     }
 
     @Override

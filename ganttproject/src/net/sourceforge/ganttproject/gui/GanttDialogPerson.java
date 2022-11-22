@@ -67,6 +67,8 @@ public class GanttDialogPerson {
   private final UIFacade myUIFacade;
   private final CustomPropertyManager myCustomPropertyManager;
 
+  private final String EMPTY_STRING_FIELD = "";
+
 
   public GanttDialogPerson(CustomPropertyManager customPropertyManager, UIFacade uiFacade, HumanResource person) {
     myCustomPropertyManager = customPropertyManager;
@@ -173,21 +175,22 @@ public class GanttDialogPerson {
     return tabbedPane;
   }
 
-  private void okButtonActionPerformed() {
-    // person ID is -1 when it is new one
-    // i.e. before the Person dialog is closed
-    if (person.getId() != -1) {
-      myUIFacade.getUndoManager().undoableEdit("Resource properties changed", new Runnable() {
-        @Override
-        public void run() {
-          applyChanges();
-        }
-      });
-
+  private void okButtonActionPerformed() { // Action will only be performed if the resource has a name
+    if(!myNameField.getValue().equals(EMPTY_STRING_FIELD)) {
+      if (person.getId() != -1) { // An already created resource
+        myUIFacade.getUndoManager().undoableEdit("Resource properties changed", new Runnable() {
+          @Override
+          public void run() {
+            applyChanges();
+          }
+        });
+      } else {  // A new resource
+        applyChanges();
+      }
+      change = true;
     } else {
-      applyChanges();
+      change = false;
     }
-    change = true;
   }
 
   private void applyChanges() {

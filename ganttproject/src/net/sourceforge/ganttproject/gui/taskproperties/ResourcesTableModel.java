@@ -40,7 +40,7 @@ class ResourcesTableModel extends AbstractTableModel {
 
   static enum Column {
     ID("id", String.class), NAME("resourcename", String.class), UNIT("unit", String.class), COORDINATOR("coordinator",
-        Boolean.class), ROLE("role", String.class);
+        Boolean.class), ROLE("role", String.class), GROUP("group", String.class);
 
     private final String myName;
     private final Class<?> myClass;
@@ -112,6 +112,9 @@ class ResourcesTableModel extends AbstractTableModel {
         case 4:
           result = assignment.getRoleForAssignment();
           break;
+        case 5:
+          result = assignment.getResource().getGroup().getName();
+          break;
         default:
           result = "";
         }
@@ -128,7 +131,7 @@ class ResourcesTableModel extends AbstractTableModel {
   public boolean isCellEditable(int row, int col) {
     boolean result = col > 0;
     if (result) {
-      result = (col == 2 ? row < myAssignments.size() : row <= myAssignments.size()) || col == 3 || col == 4;
+      result = (col == 2 ? row < myAssignments.size() : row <= myAssignments.size()) || col == 3 || col == 4 || col == 5;
     }
     return result;
   }

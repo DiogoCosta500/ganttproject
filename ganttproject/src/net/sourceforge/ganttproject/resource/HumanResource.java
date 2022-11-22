@@ -94,6 +94,7 @@ public class HumanResource implements CustomPropertyHolder {
     setMail(copy.getMail());
     setPhone(copy.getPhone());
     setRole(copy.getRole());
+    setGroup(copy.getGroup());
     setStandardPayRate(copy.getStandardPayRate());
     myManager = copy.myManager;
     DefaultListModel<GanttDaysOff> copyDaysOff = copy.getDaysOff();

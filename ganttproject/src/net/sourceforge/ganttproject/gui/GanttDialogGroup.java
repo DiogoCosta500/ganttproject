@@ -10,6 +10,7 @@ import biz.ganttproject.core.option.StringOption;
 import biz.ganttproject.core.option.DefaultStringOption;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.EnumerationOption;
+//import net.sourceforge.ganttproject.gui.taskproperties.ResourcesTableModel;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceGroup;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
@@ -30,13 +31,10 @@ public class GanttDialogGroup extends JPanel {
     private final StringOption newGroupNameField = new DefaultStringOption("colGroupName");
     private final EnumerationOption newLeaderNameField;
     private final EnumerationOption deleteGroupNameField;
-
     private HumanResourceManager manager;
 
     // FALTA FAZER
     // - Atualizar os dropdowns no create e delete
-    // - Mudar o index
-
 
     public GanttDialogGroup(HumanResourceManager manager) {
         super(new BorderLayout());
@@ -67,11 +65,11 @@ public class GanttDialogGroup extends JPanel {
             }
         };
 
-        newLeaderNameField = updateResourceEnumerator(manager.getResourcesIt());
+        newLeaderNameField = updateResourceEnumerator(innerManager.getResourcesIt());
         addGroupForm = new GPOptionGroup("createGroup", new GPOption[] { newGroupNameField , newLeaderNameField});
         addGroupForm.setTitled(true);
 
-        deleteGroupNameField = updateGroupEnumerator(manager.getGroupsIt());
+        deleteGroupNameField = updateGroupEnumerator(innerManager.getGroupsIt());
         deleteGroupForm = new GPOptionGroup("deleteGroup", new GPOption[] { deleteGroupNameField });
         deleteGroupForm.setTitled(true);
     }
@@ -112,10 +110,21 @@ public class GanttDialogGroup extends JPanel {
 
 
         final JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("AddGroup"   ,buildAddGroupTab(builder));
-        tabbedPane.addTab("DeleteGroup",buildDeleteGroupTab(builder));
+        //tabbedPane.addTab("Manage group",buildAddGroupTab(builder)); TODO
+        tabbedPane.addTab("Add group"   ,buildAddGroupTab(builder));
+        tabbedPane.addTab("Delete group",buildDeleteGroupTab(builder));
         return tabbedPane;
     }
+
+    /*private JComponent buildManageGroup(OptionsPageBuilder builder){
+        JComponent manageGroupPage = builder.createGroupComponent();
+
+        //private ResourcesTableModel myModel;
+        //myModel = new ResourcesTableModel(myTask.getAssignmentCollection());
+        //myTable = new JTable(myModel);
+
+        return manageGroupPage;
+    }*/
 
     private JComponent buildAddGroupTab(OptionsPageBuilder builder){
         JComponent addGroupPage = builder.createGroupComponent(addGroupForm);
@@ -138,6 +147,4 @@ public class GanttDialogGroup extends JPanel {
         deleteGroupPage.add(btnBoxDelete,BorderLayout.AFTER_LAST_LINE);
         return deleteGroupPage;
     }
-
-
 }
