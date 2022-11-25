@@ -76,6 +76,14 @@ public class ResourceNode extends ResourceTableNode {
     return resource.getRole();
   }
 
+  public void setGroup(HumanResourceGroup defGroup){
+    resource.setGroup(defGroup);
+  }
+
+  public HumanResourceGroup getGroup() {
+    return resource.getGroup();
+  }
+
   @Override
   public Object getStandardField(ResourceDefaultColumn def) {
     switch (def) {
@@ -103,6 +111,9 @@ public class ResourceNode extends ResourceTableNode {
       return;
     case ROLE:
       setDefaultRole((Role) value);
+      return;
+    case GROUP:
+      setGroup((HumanResourceGroup) value);
       return;
     case STANDARD_RATE:
       assert value instanceof Double : "Rate accepts numeric values";

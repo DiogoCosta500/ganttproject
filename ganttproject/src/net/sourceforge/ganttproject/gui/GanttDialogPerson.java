@@ -62,8 +62,8 @@ public class GanttDialogPerson {
   private final MoneyOption myStandardRateField = new DefaultMoneyOption("colStandardRate");
   private final EnumerationOption myGroupField;
   private final EnumerationOption myRoleField;
-  private final GPOptionGroup resourceForm;
   private GPOptionGroup myRateGroup;
+  private final GPOptionGroup resourceForm;
   private final UIFacade myUIFacade;
   private final CustomPropertyManager myCustomPropertyManager;
 
@@ -159,7 +159,7 @@ public class GanttDialogPerson {
     tabbedPane.addTab(language.getText("customColumns"), new ImageIcon(getClass().getResource("/icons/custom.gif")),
         customColumnsPanel.getComponent());
     tabbedPane.addTab(language.getText("group"), new ImageIcon(getClass().getResource("/icons/properties_16.gif")),
-            new GanttDialogGroup(person.getMyManager()).createGroupPanel());
+            new GanttDialogGroup(person.getMyManager(),myGroupField,resourceForm).createGroupPanel());
     tabbedPane.addFocusListener(new FocusAdapter() {
       boolean isFirstTime = true;
       @Override
@@ -175,7 +175,7 @@ public class GanttDialogPerson {
     return tabbedPane;
   }
 
-  private void okButtonActionPerformed() { // Action will only be performed if the resource has a name
+  private void okButtonActionPerformed() { // Action will only be performed if the resource has a nam
     if(!myNameField.getValue().equals(EMPTY_STRING_FIELD)) {
       if (person.getId() != -1) { // An already created resource
         myUIFacade.getUndoManager().undoableEdit("Resource properties changed", new Runnable() {
@@ -197,10 +197,21 @@ public class GanttDialogPerson {
     person.setName(myNameField.getValue());
     person.setMail(myMailField.getValue());
     person.setPhone(myPhoneField.getValue());
-    HumanResourceGroup group = person.getMyManager().getGroup(myGroupField.getValue());
-    if(group != null) {
-      person.setGroup(group);
+
+    HumanResourceGroup oldGroup = person.getGroup();
+    HumanResourceGroup newGroup = person.getMyManager().getGroup(myGroupField.getValue());
+
+    if(oldGroup != newGroup) {
+      if (oldGroup.getLeader() == person) {
+        oldGroup.unsetLeader();
+      } else {
+        oldGroup.deleteSubordinate(person);
+      }
     }
+    if(newGroup.getLeader() != person)
+      newGroup.addSubordinate(person);
+    person.setGroup(newGroup);
+
     Role role = findRole(myRoleField.getValue());
     if (role != null) {
       person.setRole(role);

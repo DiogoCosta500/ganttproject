@@ -16,31 +16,21 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.gui.taskproperties;
-
+package net.sourceforge.ganttproject.resource;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.roles.Role;
-import net.sourceforge.ganttproject.task.ResourceAssignment;
-import net.sourceforge.ganttproject.task.ResourceAssignmentCollection;
-import net.sourceforge.ganttproject.task.ResourceAssignmentMutator;
-
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Table model of a table of resources assigned to a task.
- *
- * @author dbarashev (Dmitry Barashev)
- */
-class ResourcesTableModel extends AbstractTableModel {
+
+public class ResourcesGroupTableModel extends AbstractTableModel {
 
   static enum Column {
-    ID("id", String.class), NAME("resourcename", String.class), UNIT("unit", String.class), COORDINATOR("coordinator",
-        Boolean.class), ROLE("role", String.class), GROUP("group", String.class);
+    ID("id", String.class), NAME("resourcename", String.class),
+    ROLE("role", String.class), GROUP("group", String.class);
 
     private final String myName;
     private final Class<?> myClass;
@@ -59,15 +49,15 @@ class ResourcesTableModel extends AbstractTableModel {
     }
   }
 
-  private final List<ResourceAssignment> myAssignments;
+  private final List<HumanResource> myAssignments;
 
-  private final ResourceAssignmentMutator myMutator;
+  private final HumanResourceGroup myGroup;
 
   private boolean isChanged = false;
 
-  public ResourcesTableModel(ResourceAssignmentCollection assignmentCollection) {
-    myAssignments = new ArrayList<ResourceAssignment>(Arrays.asList(assignmentCollection.getAssignments()));
-    myMutator = assignmentCollection.createMutator();
+  public ResourcesGroupTableModel(HumanResourceGroup group) {
+    myGroup = group;
+    myAssignments = group.getGroupElements();
   }
 
   @Override
@@ -95,25 +85,19 @@ class ResourcesTableModel extends AbstractTableModel {
     Object result;
     if (row >= 0) {
       if (row < myAssignments.size()) {
-        ResourceAssignment assignment = myAssignments.get(row);
+        HumanResource resource = myAssignments.get(row);
         switch (col) {
         case 0:
-          result = String.valueOf(assignment.getResource().getId());
+          result = String.valueOf(resource.getId());
           break;
         case 1:
-          result = assignment.getResource();
+          result = resource.getName();
           break;
         case 2:
-          result = String.valueOf(assignment.getLoad());
+          result = resource.getRole();
           break;
         case 3:
-          result = new Boolean(assignment.isCoordinator());
-          break;
-        case 4:
-          result = assignment.getRoleForAssignment();
-          break;
-        case 5:
-          result = assignment.getResource().getGroup().getName();
+          result = resource.getGroup().getName();
           break;
         default:
           result = "";
@@ -131,92 +115,47 @@ class ResourcesTableModel extends AbstractTableModel {
   public boolean isCellEditable(int row, int col) {
     boolean result = col > 0;
     if (result) {
-      result = (col == 2 ? row < myAssignments.size() : row <= myAssignments.size()) || col == 3 || col == 4 || col == 5;
+      result = (col == 2 ? row < myAssignments.size() : row <= myAssignments.size()) || col == 3 || col == 4;
     }
     return result;
   }
 
-  @Override
-  public void setValueAt(Object value, int row, int col) {
+  /*@Override
+  public void setValueAt(HumanResource resource, int row, int col) {
     if (row >= 0) {
-      if (row >= myAssignments.size()) {
-        createAssignment(value);
-      } else {
-        updateAssignment(value, row, col);
-      }
+      if (row >= myAssignments.size())
+        createGroupAssigment(resource);
     } else {
       throw new IllegalArgumentException("I can't set data in row=" + row);
     }
     isChanged = true;
-  }
+  }*/
 
-  private void updateAssignment(Object value, int row, int col) {
-    ResourceAssignment updateTarget = myAssignments.get(row);
-    switch (col) {
-    case 4: {
-      updateTarget.setRoleForAssignment((Role) value);
-      break;
-    }
-    case 3: {
-      updateTarget.setCoordinator(((Boolean) value).booleanValue());
-      break;
-    }
-    case 2: {
-      float loadAsFloat = Float.parseFloat(String.valueOf(value));
-      updateTarget.setLoad(loadAsFloat);
-      break;
-    }
-    case 1: {
-      if (value == null) {
-        updateTarget.delete();
-        myAssignments.remove(row);
-        fireTableRowsDeleted(row, row);
-      } else if (value instanceof HumanResource) {
-        float load = updateTarget.getLoad();
-        boolean coord = updateTarget.isCoordinator();
-        updateTarget.delete();
-        myMutator.deleteAssignment(updateTarget.getResource());
-        ResourceAssignment newAssignment = myMutator.addAssignment((HumanResource) value);
-        newAssignment.setLoad(load);
-        newAssignment.setCoordinator(coord);
-        myAssignments.set(row, newAssignment);
-      }
-      break;
+  /*private void createGroupAssigment(HumanResource resource) {
 
-    }
-    default:
-      break;
-    }
-  }
-
-  private void createAssignment(Object value) {
     if (value instanceof HumanResource) {
       ResourceAssignment newAssignment = myMutator.addAssignment((HumanResource) value);
-      newAssignment.setLoad(100);
 
-      boolean coord = false;
+      boolean coord = false;          // FAZER PARA LEADER DO GROUP
       if (myAssignments.isEmpty())
         coord = true;
       newAssignment.setCoordinator(coord);
+
       newAssignment.setRoleForAssignment(newAssignment.getResource().getRole());
       myAssignments.add(newAssignment);
       fireTableRowsInserted(myAssignments.size(), myAssignments.size());
     }
-  }
+  }*/
 
-  public List<ResourceAssignment> getResourcesAssignments() {
+  public List<HumanResource> getResourcesGroupAssignments() {
     return Collections.unmodifiableList(myAssignments);
   }
 
-  public void commit() {
-    myMutator.commit();
-  }
-
-  public boolean isChanged() {
+  /*public boolean isChanged() {
     return isChanged;
-  }
+  }*/
 
-  public void delete(int[] selectedRows) {
+  /*public void delete(int[] selectedRows) {
     List<ResourceAssignment> selected = new ArrayList<ResourceAssignment>();
     for (int row : selectedRows) {
       if (row < myAssignments.size()) {
@@ -228,6 +167,6 @@ class ResourcesTableModel extends AbstractTableModel {
     }
     myAssignments.removeAll(selected);
     fireTableDataChanged();
-  }
+  }*/
 
 }

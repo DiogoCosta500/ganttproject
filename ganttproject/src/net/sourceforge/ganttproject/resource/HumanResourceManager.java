@@ -27,6 +27,7 @@ import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 import java.io.OutputStream;
 import java.math.BigDecimal;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -143,11 +144,14 @@ public class HumanResourceManager {
           role = myDefaultRole;
         }
 
+        System.out.println("PASSOU EM RESOURCEBUILDER");
         HumanResourceGroup group = null;
         if (myGroup != null && resourceGroups.size() > 1) {
+          System.out.println("myGroup != null && resourceGroups.size() > 1");
           group = getGroup(myGroup);
         }
         if (group == null) {
+          System.out.println("myGroup == null || resourceGroups.size() <= 1");
           group = myDefaultGroup;
         }
         result.setGroup(group);

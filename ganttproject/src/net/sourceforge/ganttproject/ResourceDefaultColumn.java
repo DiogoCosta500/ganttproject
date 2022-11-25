@@ -34,12 +34,12 @@ import biz.ganttproject.core.table.ColumnList.Column;
  * @author dbarashev (Dmitry Barashev)
  */
 public enum ResourceDefaultColumn {
-  NAME(new ColumnList.ColumnStub("0", null, true, 0, 200), String.class, "tableColResourceName", true),
-  ROLE(new ColumnList.ColumnStub("1", null, true, 1, 75), String.class, "tableColResourceRole", true),
+  NAME(new ColumnList.ColumnStub("0", null, true, 0, 200), String.class, "tableColResourceName", false),
+  ROLE(new ColumnList.ColumnStub("1", null, true, 1, 75), String.class, "tableColResourceRole", false),
   EMAIL(new ColumnList.ColumnStub("2", null, false, -1, 75), String.class, "tableColResourceEMail", true),
   PHONE(new ColumnList.ColumnStub("3", null, false, -1, 50), String.class, "tableColResourcePhone", true),
   ROLE_IN_TASK(new ColumnList.ColumnStub("4", null, false, -1, 75), String.class, "tableColResourceRoleForTask", true),
-  GROUP(new ColumnList.ColumnStub("5", null, true, 2, 75), String.class, "tableColResourceGroup", true),
+  GROUP(new ColumnList.ColumnStub("5", null, true, 2, 75), String.class, "tableColResourceGroup", false),
   STANDARD_RATE(new ColumnList.ColumnStub("6", null, false, -1, 75), Double.class, "tableColResourceRate", true);
 
   private final Column myDelegate;

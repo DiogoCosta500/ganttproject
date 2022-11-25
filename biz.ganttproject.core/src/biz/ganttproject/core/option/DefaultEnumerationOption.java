@@ -53,6 +53,15 @@ public class DefaultEnumerationOption<T> extends GPAbstractOption<String> implem
     getPropertyChangeSupport().firePropertyChange(EnumerationOption.VALUE_SET, oldValues, myValues);
   }
 
+  public void updateValues(List<T> values){
+    List<String> oldValues = Lists.newArrayList(myValues);
+    for(T value : values){
+      myStringValue_ObjectValue.put(objectToString(value), value);
+    }
+    myValues.addAll(myStringValue_ObjectValue.keySet());
+    getPropertyChangeSupport().firePropertyChange(EnumerationOption.VALUE_SET, oldValues, myValues);
+  }
+
   protected String objectToString(T obj) {
     assert obj != null;
     return obj.toString();

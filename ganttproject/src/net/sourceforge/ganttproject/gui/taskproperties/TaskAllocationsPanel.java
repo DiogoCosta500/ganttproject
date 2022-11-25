@@ -42,7 +42,7 @@ import java.math.BigDecimal;
  * @author dbarashev (Dmitry Barashev)
  */
 public class TaskAllocationsPanel {
-  private ResourcesTableModel myModel;
+  private ResourcesAssignmentTableModel myModel;
   private final HumanResourceManager myHRManager;
   private final RoleManager myRoleManager;
   private final Task myTask;
@@ -71,7 +71,7 @@ public class TaskAllocationsPanel {
   }
 
   public JPanel getComponent() {
-    myModel = new ResourcesTableModel(myTask.getAssignmentCollection());
+    myModel = new ResourcesAssignmentTableModel(myTask.getAssignmentCollection());
     myTable = new JTable(myModel);
     UIUtil.setupTableUI(getTable());
     CommonPanel.setupComboBoxEditor(getTable().getColumnModel().getColumn(1), myHRManager.getResources().toArray());
