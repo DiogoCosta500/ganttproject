@@ -15,11 +15,16 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceGroup;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableColumnModel;
+import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.sql.SQLOutput;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Vector;
 
 
 public class GanttDialogGroup extends JPanel {
@@ -41,7 +46,8 @@ public class GanttDialogGroup extends JPanel {
     private HumanResourceManager manager;
     private JComponent manageGroupPage;
 
-    private JComponent myTable;
+    private JTable myTable;
+    private JScrollPane myScroll;
 
     public GanttDialogGroup(HumanResourceManager manager, EnumerationOption personDialogGroupField, GPOptionGroup personDialogForm) {
         super(new BorderLayout());
@@ -56,10 +62,9 @@ public class GanttDialogGroup extends JPanel {
                 String groupName = manageGroupNameField.getValue().split("\\s+")[2];
                 HumanResourceGroup managedGroup = innerManager.getGroup(groupName);
 
-                manageGroupPage.remove(myTable);
                 myModel = new ResourcesGroupTableModel(managedGroup);
-                myTable = new JTable(myModel);
-                manageGroupPage.add(myTable);
+                myTable.setModel(myModel);
+                myTable.updateUI();
                 manageGroupPage.updateUI();
             }
         };
@@ -117,8 +122,6 @@ public class GanttDialogGroup extends JPanel {
                 }
                 innerManager.removeGroup(groupName);
             }
-
-
         };
 
         manageGroupNameField = updateGroupEnumerator(innerManager.getGroupsIt());
@@ -184,7 +187,8 @@ public class GanttDialogGroup extends JPanel {
         btnBoxManage.add(new JButton(myManageAction));
 
         myTable = new JTable();
-        manageGroupPage.add(myTable);
+        myScroll = new JScrollPane(myTable);
+        manageGroupPage.add(myScroll);
 
         manageGroupPage.add(btnBoxManage,BorderLayout.AFTER_LAST_LINE);
         return manageGroupPage;

@@ -19,6 +19,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.resource;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.roles.Role;
+
+import javax.annotation.Resource;
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -120,8 +122,8 @@ public class ResourcesGroupTableModel extends AbstractTableModel {
     return result;
   }
 
-  /*@Override
-  public void setValueAt(HumanResource resource, int row, int col) {
+
+  /*public void setValueAt(HumanResource resource, int row, int col) {
     if (row >= 0) {
       if (row >= myAssignments.size())
         createGroupAssigment(resource);
@@ -131,9 +133,11 @@ public class ResourcesGroupTableModel extends AbstractTableModel {
     isChanged = true;
   }*/
 
-  /*private void createGroupAssigment(HumanResource resource) {
+  private void createGroupAssigment(HumanResource resource) {
+    myAssignments.add(resource);
+    fireTableRowsInserted(myAssignments.size(),myAssignments.size());
 
-    if (value instanceof HumanResource) {
+    /*if (value instanceof HumanResource) {
       ResourceAssignment newAssignment = myMutator.addAssignment((HumanResource) value);
 
       boolean coord = false;          // FAZER PARA LEADER DO GROUP
@@ -144,8 +148,8 @@ public class ResourcesGroupTableModel extends AbstractTableModel {
       newAssignment.setRoleForAssignment(newAssignment.getResource().getRole());
       myAssignments.add(newAssignment);
       fireTableRowsInserted(myAssignments.size(), myAssignments.size());
-    }
-  }*/
+    }*/
+  }
 
   public List<HumanResource> getResourcesGroupAssignments() {
     return Collections.unmodifiableList(myAssignments);
