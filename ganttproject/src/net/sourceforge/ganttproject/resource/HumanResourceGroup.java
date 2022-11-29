@@ -3,47 +3,42 @@ package net.sourceforge.ganttproject.resource;
 
 import java.util.*;
 
-public class HumanResourceGroup {
+public class HumanResourceGroup extends HumanResource{
 
-  private String name;
-  private int id;
+  /*private String name;
+  private int id;*/
   private HumanResource leader;
   private List<HumanResource> subordinates;
-  private HumanResourceManager myManager;
+  //private HumanResourceManager myManager;
+  /*private final List<ResourceAssignment> myAssignments = new ArrayList<>();*/
+
+
 
   public HumanResourceGroup(HumanResourceManager manager) {
-    this.name = "";
-    this.id = -1;
-    this.myManager = manager;
+    super("",-1,manager);
     this.subordinates = new LinkedList<>();
   }
   public HumanResourceGroup(String name, HumanResourceManager manager) {
-    this.name = name;
-    this.myManager = manager;
+    super(name,manager);
     this.subordinates = new LinkedList<>();
   }
 
   public HumanResourceGroup(String name, HumanResource leader, HumanResourceManager manager) {
-    this.name = name;
+    super(name,manager);
     this.leader = leader;
-    this.myManager = manager;
     this.subordinates = new LinkedList<>();
     leader.setGroup(this);
   }
 
   public HumanResourceGroup(String name, int id,HumanResource leader,HumanResourceManager manager){
-    this.name = name;
-    this.id = id;
+    super(name,id,manager);
     this.leader = leader;
     this.subordinates = new LinkedList<>();
-    this.myManager = manager;
   }
 
   public HumanResourceGroup(String name, int id,HumanResourceManager manager){
-    this.name = name;
-    this.id = id;
+    super(name,id,manager);
     this.subordinates = new LinkedList<>();
-    this.myManager = manager;
   }
 
   public void addSubordinate(HumanResource subordinate){
@@ -107,20 +102,8 @@ public class HumanResourceGroup {
     return newList;
   }
 
-  public int getId(){
-    return this.id;
-  }
-
-  public void setId(int id){
-    this.id = id;
-  }
-
-  public String getName(){
-    return this.name;
-  }
-
-  public void setName(String name){
-    this.name = name;
+  public HumanResourceGroup getGroup(){
+    return this;
   }
 
 }

@@ -83,6 +83,12 @@ public class HumanResource implements CustomPropertyHolder {
     myManager = manager;
     myCustomProperties = new CustomColumnsValues(myManager.getCustomPropertyManager());
   }
+  public HumanResource(String name,HumanResourceManager manager) {
+    this.name = name;
+    myManager = manager;
+    myCustomProperties = new CustomColumnsValues(myManager.getCustomPropertyManager());
+  }
+
 
   private HumanResource(HumanResource copy) {
     areEventsEnabled = false;

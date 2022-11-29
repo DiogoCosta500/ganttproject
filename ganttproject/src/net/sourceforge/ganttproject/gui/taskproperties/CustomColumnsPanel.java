@@ -48,7 +48,6 @@ public class CustomColumnsPanel {
   private static GanttLanguage language = GanttLanguage.getInstance();
   private static final String[] COLUMN_NAMES = new String[] { CustomColumnsPanel.language.getText("name"),
     CustomColumnsPanel.language.getText("typeClass"), CustomColumnsPanel.language.getText("value") };
-
   private final CustomPropertyManager myCustomPropertyManager;
 
   private final UIFacade myUiFacade;

@@ -22,6 +22,8 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceGroup;
 import net.sourceforge.ganttproject.roles.Role;
+import net.sourceforge.ganttproject.roles.RoleManager;
+import net.sourceforge.ganttproject.roles.RoleManagerImpl;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.ResourceAssignmentCollection;
 import net.sourceforge.ganttproject.task.ResourceAssignmentMutator;
@@ -95,37 +97,44 @@ class ResourcesAssignmentTableModel extends AbstractTableModel {
   public Object getValueAt(int row, int col) {
     System.out.println("DEBUG - getValueAt");
     Object result;
-    if (row >= 0) {
-      if (row < myAssignments.size()) {
-        ResourceAssignment assignment = myAssignments.get(row);
-        switch (col) {
-        case 0:
-          result = String.valueOf(assignment.getResource().getId());
-          break;
-        case 1:
-          result = assignment.getResource();
-          break;
-        case 2:
-          result = String.valueOf(assignment.getLoad());
-          break;
-        case 3:
-          result = new Boolean(assignment.isCoordinator());
-          break;
-        case 4:
-          result = assignment.getRoleForAssignment();
-          break;
-        case 5:
-          result = assignment.getResource().getGroup().getName();
-          break;
-        default:
-          result = "";
+    try{
+      if (row >= 0) {
+        if (row < myAssignments.size()) {
+          ResourceAssignment assignment = myAssignments.get(row);
+          switch (col) {
+            case 0:
+              result = String.valueOf(assignment.getResource().getId());
+              break;
+            case 1:
+              result = assignment.getResource();
+              break;
+            case 2:
+              result = String.valueOf(assignment.getLoad());
+              break;
+            case 3:
+              result = new Boolean(assignment.isCoordinator());
+              break;
+            case 4:
+              result = assignment.getRoleForAssignment();
+              break;
+            case 5:
+              result = assignment.getResource().getGroup().getName();
+              break;
+            default:
+              result = "";
+          }
+        } else {
+          result = null;
         }
       } else {
-        result = null;
+        throw new IllegalArgumentException("I can't return data in row=" + row);
       }
-    } else {
-      throw new IllegalArgumentException("I can't return data in row=" + row);
+    }catch (Exception e){
+
+      e.printStackTrace();
+      return null;
     }
+
     return result;
   }
 
@@ -140,16 +149,19 @@ class ResourcesAssignmentTableModel extends AbstractTableModel {
 
   @Override
   public void setValueAt(Object value, int row, int col) {
-    if (row >= 0) {
-      if (row >= myAssignments.size()) {
-        createAssignment(value);
+      System.out.println("DEBUG - SETVALUEAT");
+      if (row >= 0) {
+        if (row >= myAssignments.size()) {
+          createAssignment(value);
+        } else {
+          updateAssignment(value, row, col);
+        }
       } else {
-        updateAssignment(value, row, col);
+        throw new IllegalArgumentException("I can't set data in row=" + row);
       }
-    } else {
-      throw new IllegalArgumentException("I can't set data in row=" + row);
-    }
-    isChanged = true;
+      isChanged = true;
+
+
   }
 
   private void updateAssignment(Object value, int row, int col) {
@@ -193,13 +205,28 @@ class ResourcesAssignmentTableModel extends AbstractTableModel {
   }
 
   private void createAssignment(Object value) {
-    if (value instanceof HumanResource) {
+    System.out.println("DEBUG - createAssignment");
+    for(int i = 0; i < myAssignments.size(); i++){
+      System.out.println(myAssignments.get(i));
+    }
+    if(value instanceof HumanResourceGroup){
+      System.out.println("INSTANCE OF HUMAN RESOURCE GROUP");
+      ResourceAssignment newAssignment = myMutator.addAssignment((HumanResource) value);
+      newAssignment.setLoad(100);
+      boolean coord = myAssignments.isEmpty();
+      newAssignment.setCoordinator(coord);
+      newAssignment.setRoleForAssignment(new RoleManagerImpl().getDefaultRole());
+      System.out.println(myAssignments.size());
+      myAssignments.add(newAssignment);
+      System.out.println(myAssignments.size());
+      fireTableRowsInserted(myAssignments.size(), myAssignments.size());
+    }
+    else if (value instanceof HumanResource) {
+      System.out.println("INSTANCE OF HUMAN RESOURCE");
       ResourceAssignment newAssignment = myMutator.addAssignment((HumanResource) value);
       newAssignment.setLoad(100);
 
-      boolean coord = false;
-      if (myAssignments.isEmpty())
-        coord = true;
+      boolean coord = myAssignments.isEmpty();
       newAssignment.setCoordinator(coord);
       newAssignment.setRoleForAssignment(newAssignment.getResource().getRole());
       System.out.println(myAssignments.size());
