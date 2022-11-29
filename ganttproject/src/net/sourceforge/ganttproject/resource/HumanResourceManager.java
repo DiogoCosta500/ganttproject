@@ -27,12 +27,7 @@ import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 import java.io.OutputStream;
 import java.math.BigDecimal;
-import java.sql.SQLOutput;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author barmeier
@@ -100,8 +95,6 @@ public class HumanResourceManager {
 
   private HumanResourceGroup myDefaultGroup = new HumanResourceGroup("none", this);
   private int nextFreeId = 0;
-
-  private int nextFreeGroupId = 0;
 
   private final Role myDefaultRole;
 
@@ -219,17 +212,19 @@ public class HumanResourceManager {
     if (resource.getId() >= nextFreeId) {
       nextFreeId = resource.getId() + 1;
     }
+
     resources.add(resource);
     fireResourceAdded(resource);
   }
 
   public void addGroup(HumanResourceGroup resourceGroup) {
-    if ( resourceGroup.getId() == 0 ) {
-      resourceGroup.setId(nextFreeGroupId);
+    if (resourceGroup.getId() >= nextFreeId) {
+      nextFreeId = resourceGroup.getId() + 1;
+    }else {
+      resourceGroup.setId(nextFreeId);
+      nextFreeId++;
     }
-    if (resourceGroup.getId() >= nextFreeGroupId) {
-      nextFreeGroupId = resourceGroup.getId() + 1;
-    }
+
     resourceGroups.add(resourceGroup);
   }
 
@@ -244,6 +239,15 @@ public class HumanResourceManager {
     if(index > 0){ // First index is for none Group
       resourceGroups.remove(index);
     }
+  }
+
+  public void removeGroupById(int id){
+    HumanResourceGroup ptr = null;
+    for(int i = 0; i < resourceGroups.size(); i++){
+      if(resourceGroups.get(i).getId() == id)
+        ptr = resourceGroups.get(i);
+    }
+    resourceGroups.remove(ptr);
   }
 
   private int findGroup(String groupName){
@@ -262,7 +266,11 @@ public class HumanResourceManager {
     for (int i = 0; i < resources.size(); i++)
       if (resources.get(i).getId() == id) {
         pr = resources.get(i);
-        break;
+        return pr;
+      }
+    for (int i = 0; i < resourceGroups.size(); i++)
+      if (resourceGroups.get(i).getId() == id) {
+        pr = resourceGroups.get(i);
       }
     return pr;
   }
@@ -271,8 +279,22 @@ public class HumanResourceManager {
     return resources;
   }
 
+  public List<HumanResource> getHumanResources(){
+    List<HumanResource> humanResources = new LinkedList<HumanResource>(resources);
+    List<HumanResource> groupResources = new LinkedList<HumanResource>(resourceGroups);
+    groupResources.remove(0); // Removing none group
+    humanResources.addAll(groupResources);
+    return humanResources;
+  }
+
   public HumanResource[] getResourcesArray() {
     return resources.toArray(new HumanResource[resources.size()]);
+  }
+
+  public HumanResource[] getHumanResourcesArray() {
+    HumanResource[] array =  new HumanResource[getHumanResources().size()];
+    getHumanResources().toArray(array);
+    return array;
   }
 
   public void remove(HumanResource resource) {
@@ -328,6 +350,7 @@ public class HumanResourceManager {
   }
 
   public void fireAssignmentsChanged(HumanResource resource) {
+    System.out.println(resource);
     ResourceEvent e = new ResourceEvent(this, resource);
     for (Iterator<ResourceView> i = myViews.iterator(); i.hasNext();) {
       ResourceView nextView = i.next();

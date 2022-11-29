@@ -22,6 +22,7 @@ import com.google.common.base.Strings;
 import net.sourceforge.ganttproject.DesktopIntegration;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
+import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.util.PropertiesUtil;
 
 import javax.swing.*;
@@ -32,10 +33,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * @author bard

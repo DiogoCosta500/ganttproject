@@ -159,7 +159,7 @@ public class GanttDialogPerson {
     tabbedPane.addTab(language.getText("customColumns"), new ImageIcon(getClass().getResource("/icons/custom.gif")),
         customColumnsPanel.getComponent());
     tabbedPane.addTab(language.getText("group"), new ImageIcon(getClass().getResource("/icons/properties_16.gif")),
-            new GanttDialogGroup(person.getMyManager(),myGroupField,resourceForm).createGroupPanel());
+            new GanttDialogGroup(person.getMyManager(),myGroupField,resourceForm,person).createGroupPanel());
     tabbedPane.addFocusListener(new FocusAdapter() {
       boolean isFirstTime = true;
       @Override
@@ -202,11 +202,7 @@ public class GanttDialogPerson {
     HumanResourceGroup newGroup = person.getMyManager().getGroup(myGroupField.getValue());
 
     if(oldGroup != newGroup) {
-      if (oldGroup.getLeader() == person) {
-        oldGroup.unsetLeader();
-      } else {
-        oldGroup.deleteSubordinate(person);
-      }
+      oldGroup.removeElement(person);
     }
     if(newGroup.getLeader() != person)
       newGroup.addSubordinate(person);

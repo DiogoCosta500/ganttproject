@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.gui.taskproperties;
 
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
+import net.sourceforge.ganttproject.resource.HumanResourceGroup;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.ResourceAssignmentCollection;
@@ -92,6 +93,7 @@ class ResourcesAssignmentTableModel extends AbstractTableModel {
 
   @Override
   public Object getValueAt(int row, int col) {
+    System.out.println("DEBUG - getValueAt");
     Object result;
     if (row >= 0) {
       if (row < myAssignments.size()) {
@@ -151,6 +153,7 @@ class ResourcesAssignmentTableModel extends AbstractTableModel {
   }
 
   private void updateAssignment(Object value, int row, int col) {
+    System.out.println("DEBUG - updateAssignment");
     ResourceAssignment updateTarget = myAssignments.get(row);
     switch (col) {
     case 4: {
@@ -199,7 +202,9 @@ class ResourcesAssignmentTableModel extends AbstractTableModel {
         coord = true;
       newAssignment.setCoordinator(coord);
       newAssignment.setRoleForAssignment(newAssignment.getResource().getRole());
+      System.out.println(myAssignments.size());
       myAssignments.add(newAssignment);
+      System.out.println(myAssignments.size());
       fireTableRowsInserted(myAssignments.size(), myAssignments.size());
     }
   }

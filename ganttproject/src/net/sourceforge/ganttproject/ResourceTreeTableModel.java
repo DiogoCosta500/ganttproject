@@ -18,7 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -36,7 +35,6 @@ import net.sourceforge.ganttproject.resource.ResourceTableNode;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 
@@ -110,7 +108,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
   private DefaultMutableTreeTableNode buildTree() {
 
     DefaultMutableTreeTableNode root = new DefaultMutableTreeTableNode();
-    List<HumanResource> listResources = myResourceManager.getResources();
+    List<HumanResource> listResources = myResourceManager.getHumanResources();
     Iterator<HumanResource> itRes = listResources.iterator();
 
     while (itRes.hasNext()) {
@@ -122,8 +120,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
   }
 
   public void updateResources() {
-    HumanResource[] listResources = myResourceManager.getResourcesArray();
-
+    HumanResource[] listResources = myResourceManager.getHumanResourcesArray();
     for (int idxResource = 0; idxResource < listResources.length; idxResource++) {
       HumanResource hr = listResources[idxResource];
 
@@ -215,8 +212,10 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
     myResourceManager.clear();
   }
 
-  public List<HumanResource> getAllResouces() {
-    return myResourceManager.getResources();
+  public List<HumanResource> getAllResources() {
+    return myResourceManager.getHumanResources();
+
+    //return myResourceManager.getHumanResources();
   }
 
   @Override

@@ -135,6 +135,9 @@ public class TaskDependenciesPanel {
       @Override
       public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         DependencyTableModel.TaskComboItem item = (DependencyTableModel.TaskComboItem) value;
+        if(item == null){
+          return myBox;
+        }
         TaskManager taskManager = item.myTask.getManager();
         JComponent superResult = (JComponent) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         if (index == -1) {

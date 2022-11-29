@@ -74,7 +74,7 @@ public class TaskAllocationsPanel {
     myModel = new ResourcesAssignmentTableModel(myTask.getAssignmentCollection());
     myTable = new JTable(myModel);
     UIUtil.setupTableUI(getTable());
-    CommonPanel.setupComboBoxEditor(getTable().getColumnModel().getColumn(1), myHRManager.getResources().toArray());
+    CommonPanel.setupComboBoxEditor(getTable().getColumnModel().getColumn(1), myHRManager.getHumanResources().toArray());
     CommonPanel.setupComboBoxEditor(getTable().getColumnModel().getColumn(4), myRoleManager.getEnabledRoles());
 
     AbstractTableAndActionsComponent<ResourceAssignment> tableAndActions =

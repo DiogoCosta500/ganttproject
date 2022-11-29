@@ -1,7 +1,5 @@
 package net.sourceforge.ganttproject.gui;
 
-
-
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import biz.ganttproject.core.option.GPOption;
@@ -15,57 +13,131 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceGroup;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableColumnModel;
-import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.sql.SQLOutput;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Vector;
+import java.util.List;
 
 
 public class GanttDialogGroup extends JPanel {
 
     private final GPAction myManageAction;
+    private final GPAction mySelectAction;
+    private final GPAction myAddResourceAction;
+    private final GPAction myRemoveResourceAction;
+    private final GPAction myMakeLeaderAction;
+
     private final GPAction myCreateAction;
     private final GPAction myDeleteAction;
 
-    private final GPOptionGroup manageGroupForm;
+
+    private final GPOptionGroup manageCheckGroupForm;
+
+    private final GPOptionGroup managedGroupForm;
     private final GPOptionGroup addGroupForm;
     private final GPOptionGroup deleteGroupForm;
     private final StringOption newGroupNameField = new DefaultStringOption("colGroupName");
 
     private final EnumerationOption manageGroupNameField;
 
+    private final DefaultEnumerationOption resourceToAddField;
+    private final DefaultEnumerationOption resourceToRemoveField;
+    private final DefaultEnumerationOption resourceToSetLeaderField;
     private ResourcesGroupTableModel myModel;
     private final EnumerationOption newLeaderNameField;
     private final EnumerationOption deleteGroupNameField;
     private HumanResourceManager manager;
+    private JComponent checkGroupPage;
     private JComponent manageGroupPage;
-
     private JTable myTable;
     private JScrollPane myScroll;
 
-    public GanttDialogGroup(HumanResourceManager manager, EnumerationOption personDialogGroupField, GPOptionGroup personDialogForm) {
+    public GanttDialogGroup(HumanResourceManager manager, EnumerationOption personDialogGroupField,
+                            GPOptionGroup personDialogForm, HumanResource editingPerson) {
         super(new BorderLayout());
         this.manager = manager;
         final HumanResourceManager innerManager = manager;
         final DefaultEnumerationOption personGroupField = (DefaultEnumerationOption) personDialogGroupField;
         final GPOptionGroup pdForm = personDialogForm;
+        final HumanResource pdEditingPerson = editingPerson;
+
+
+
+
+        mySelectAction = new GPAction("Select"){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String groupId = manageGroupNameField.getValue().split("\\s+")[0];
+                HumanResourceGroup managedGroup = (HumanResourceGroup) innerManager.getById(Integer.parseInt(groupId));
+
+                updateBoxes(managedGroup);
+            }
+        };
+
+        myAddResourceAction = new GPAction("Add Resource"){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String groupId = manageGroupNameField.getValue().split("\\s+")[0];
+                HumanResourceGroup managedGroup = (HumanResourceGroup) innerManager.getById(Integer.parseInt(groupId));
+
+                String resourceName = (String) resourceToAddField.getValue();
+                HumanResource resource = innerManager.getResource(resourceName);
+
+                resource.getGroup().removeElement(resource);
+                resource.setGroup(managedGroup);
+                managedGroup.addSubordinate(resource);
+
+                updateBoxes(managedGroup);
+            }
+        };
+
+        myRemoveResourceAction = new GPAction("Remove Resource"){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String groupId = manageGroupNameField.getValue().split("\\s+")[0];
+                HumanResourceGroup managedGroup = (HumanResourceGroup) innerManager.getById(Integer.parseInt(groupId));
+
+                String resourceName = (String) resourceToRemoveField.getValue();
+                HumanResource resource = innerManager.getResource(resourceName);
+
+                managedGroup.removeElement(resource);
+                innerManager.getDefaultGroup().addSubordinate(resource);
+
+                updateBoxes(managedGroup);
+            }
+        };
+
+        myMakeLeaderAction = new GPAction("Make Leader"){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String groupId = manageGroupNameField.getValue().split("\\s+")[0];
+                HumanResourceGroup managedGroup = (HumanResourceGroup) innerManager.getById(Integer.parseInt(groupId));
+
+                String resourceName = (String) resourceToSetLeaderField.getValue();
+                HumanResource resource = innerManager.getResource(resourceName);
+
+                HumanResource oldLeader = managedGroup.getLeader();
+                managedGroup.unsetLeader();
+                if(oldLeader != null)
+                    managedGroup.addSubordinate(oldLeader);
+                managedGroup.setLeader(resource);
+
+                updateBoxes(managedGroup);
+            }
+        };
 
         myManageAction = new GPAction("check") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String groupName = manageGroupNameField.getValue().split("\\s+")[2];
-                HumanResourceGroup managedGroup = innerManager.getGroup(groupName);
+                String groupId = manageGroupNameField.getValue().split("\\s+")[0];
+                HumanResourceGroup managedGroup = (HumanResourceGroup) innerManager.getById(Integer.parseInt(groupId));
 
+                // Creating table and updating UI
                 myModel = new ResourcesGroupTableModel(managedGroup);
                 myTable.setModel(myModel);
                 myTable.updateUI();
-                manageGroupPage.updateUI();
+                checkGroupPage.updateUI();
             }
         };
 
@@ -74,29 +146,23 @@ public class GanttDialogGroup extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 HumanResourceGroup newGroup;
                 if( newLeaderNameField.getValue() != null ) {
-                    String leaderName = newLeaderNameField.getValue().split("\\s+")[2];
-                    HumanResource leader = innerManager.getResource(leaderName);
+                    String leaderId = newLeaderNameField.getValue().split("\\s+")[0];
+                    HumanResource leader = innerManager.getById(Integer.parseInt(leaderId));
 
                     // remove our new group leader from his old group
                     HumanResourceGroup oldLeaderGroup = leader.getGroup();
-                    if(oldLeaderGroup.getLeader() != null && oldLeaderGroup.getLeader() == leader) {
-                        oldLeaderGroup.unsetLeader();
-                    }
-                    else {
-                        oldLeaderGroup.deleteSubordinate(leader);
-                    }
+                    oldLeaderGroup.removeElement(leader);
 
                     newGroup = new HumanResourceGroup(newGroupNameField.getValue(), leader, innerManager);
 
                     // UI
-                    java.util.List<String> newValue = new java.util.LinkedList<String>();
+                    List<String> newValue = new LinkedList<String>();
                     newValue.add(newGroupNameField.getValue());
 
-                    String resourceNameValue = (String) pdForm.getOption("name").getValue();
                     String oldGroupValue = (String) pdForm.getOption("colGroup").getValue();
 
                     personGroupField.updateValues(newValue);
-                    if(resourceNameValue.equals(leaderName)) {
+                    if( leaderId.equals(Integer.toString(pdEditingPerson.getId())) ) {
                         personGroupField.setValue(newGroup.getName());
                     }
                     else {
@@ -113,52 +179,35 @@ public class GanttDialogGroup extends JPanel {
         myDeleteAction = new GPAction("delete") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String groupName = deleteGroupNameField.getValue().split("\\s+")[2];
-                HumanResourceGroup group = innerManager.getGroup(groupName);
+                String groupId = deleteGroupNameField.getValue().split("\\s+")[0];
+                HumanResourceGroup group = (HumanResourceGroup) innerManager.getById(Integer.parseInt(groupId));
                 Iterator<HumanResource> it = group.getGroupElementsIt();
                 while(it.hasNext()){
                     HumanResource p = it.next();
                     p.setGroup(innerManager.getDefaultGroup());
                 }
-                innerManager.removeGroup(groupName);
+                innerManager.removeGroupById(Integer.parseInt(groupId));
             }
         };
 
-        manageGroupNameField = updateGroupEnumerator(innerManager.getGroupsIt());
-        manageGroupForm = new GPOptionGroup("manageGroup", new GPOption[] { manageGroupNameField });
-        manageGroupForm.setTitled(true);
 
-        newLeaderNameField = updateResourceEnumerator(innerManager.getResourcesIt());
+        manageGroupNameField = (EnumerationOption) getGroupEnumerator(innerManager.getGroupsIt());
+        manageCheckGroupForm = new GPOptionGroup("manageCheckGroup", new GPOption[] { manageGroupNameField });
+        manageCheckGroupForm.setTitled(true);
+
+        resourceToAddField = getEmptyEnumerator("colResourceToAddField");
+        resourceToRemoveField = getEmptyEnumerator("colResourceToRemoveField");
+        resourceToSetLeaderField = getEmptyEnumerator("colResourceToSetLeaderField");
+        managedGroupForm = new GPOptionGroup("manageGroup", new GPOption[] { manageGroupNameField, resourceToAddField , resourceToRemoveField , resourceToSetLeaderField });
+        managedGroupForm.setTitled(true);
+
+        newLeaderNameField = (EnumerationOption) getResourceEnumerator(innerManager.getResourcesIt());
         addGroupForm = new GPOptionGroup("createGroup", new GPOption[] { newGroupNameField , newLeaderNameField});
         addGroupForm.setTitled(true);
 
-        deleteGroupNameField = updateGroupEnumerator(innerManager.getGroupsIt());
+        deleteGroupNameField = (EnumerationOption) getGroupEnumerator(innerManager.getGroupsIt());
         deleteGroupForm = new GPOptionGroup("deleteGroup", new GPOption[] { deleteGroupNameField });
         deleteGroupForm.setTitled(true);
-    }
-
-    private DefaultEnumerationOption<Object> updateResourceEnumerator(Iterator<HumanResource> it){
-        String[] resourceValues = new String[manager.getNumResources()];
-
-        int i = 0;
-        while(it.hasNext()){
-            HumanResource next = it.next();
-            resourceValues[i++] = next.getId() + " - " + next.getName();
-        }
-
-        return new DefaultEnumerationOption<Object>("colLeaderName",resourceValues);
-    }
-
-    private DefaultEnumerationOption<Object> updateGroupEnumerator(Iterator<HumanResourceGroup> it){
-        String[] groupValues = new String[manager.getNumGroups()];
-
-        int i = 0;
-        while(it.hasNext()){
-            HumanResourceGroup next = it.next();
-            groupValues[i++] = next.getId() + " - " + next.getName();
-        }
-
-        return new DefaultEnumerationOption<Object>("colDeleteGroup", groupValues);
     }
 
     public Component createGroupPanel(){
@@ -173,6 +222,7 @@ public class GanttDialogGroup extends JPanel {
 
 
         final JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.addTab("Check group", buildCheckGroupTab(builder));
         tabbedPane.addTab("Manage group",buildManageGroupTab(builder));
         tabbedPane.addTab("Add group"   ,buildAddGroupTab(builder));
         tabbedPane.addTab("Delete group",buildDeleteGroupTab(builder));
@@ -180,7 +230,21 @@ public class GanttDialogGroup extends JPanel {
     }
 
     private JComponent buildManageGroupTab(OptionsPageBuilder builder){
-        manageGroupPage = builder.createGroupComponent(manageGroupForm);
+        manageGroupPage = builder.createGroupComponent(managedGroupForm);
+
+        Box btnBoxManage = Box.createHorizontalBox();
+        btnBoxManage.setBorder(BorderFactory.createEmptyBorder(3, 0, 3, 0));
+        btnBoxManage.add(new JButton(mySelectAction));
+        btnBoxManage.add(new JButton(myAddResourceAction));
+        btnBoxManage.add(new JButton(myRemoveResourceAction));
+        btnBoxManage.add(new JButton(myMakeLeaderAction));
+
+        manageGroupPage.add(btnBoxManage,BorderLayout.AFTER_LAST_LINE);
+        return manageGroupPage;
+    }
+
+    private JComponent buildCheckGroupTab(OptionsPageBuilder builder){
+        checkGroupPage = builder.createGroupComponent(manageCheckGroupForm);
 
         Box btnBoxManage = Box.createHorizontalBox();
         btnBoxManage.setBorder(BorderFactory.createEmptyBorder(3, 0, 3, 0));
@@ -188,10 +252,10 @@ public class GanttDialogGroup extends JPanel {
 
         myTable = new JTable();
         myScroll = new JScrollPane(myTable);
-        manageGroupPage.add(myScroll);
+        checkGroupPage.add(myScroll);
 
-        manageGroupPage.add(btnBoxManage,BorderLayout.AFTER_LAST_LINE);
-        return manageGroupPage;
+        checkGroupPage.add(btnBoxManage,BorderLayout.AFTER_LAST_LINE);
+        return checkGroupPage;
     }
 
     private JComponent buildAddGroupTab(OptionsPageBuilder builder){
@@ -215,4 +279,60 @@ public class GanttDialogGroup extends JPanel {
         deleteGroupPage.add(btnBoxDelete,BorderLayout.AFTER_LAST_LINE);
         return deleteGroupPage;
     }
+
+    private DefaultEnumerationOption<Object> getEmptyEnumerator(String colName){
+        String[] empty = {"-"};
+
+        return new DefaultEnumerationOption<Object>(colName,empty);
+    }
+
+    private DefaultEnumerationOption<Object> getResourceEnumerator(Iterator<HumanResource> it){
+        String[] resourceValues = new String[manager.getNumResources()];
+
+        int i = 0;
+        while(it.hasNext()){
+            HumanResource next = it.next();
+            resourceValues[i++] = next.getId() + " - " + next.getName();
+        }
+
+        return new DefaultEnumerationOption<Object>("colLeaderName",resourceValues);
+    }
+
+    private DefaultEnumerationOption<Object> getGroupEnumerator(Iterator<HumanResourceGroup> it){
+        String[] groupValues = new String[manager.getNumGroups()];
+
+        int i = 0;
+        while(it.hasNext()){
+            HumanResourceGroup next = it.next();
+            groupValues[i++] = next.getId() + " - " + next.getName();
+        }
+
+        return new DefaultEnumerationOption<Object>("colDeleteGroup", groupValues);
+    }
+
+    private List<String> getResourceValuesEnumerator(Iterator<HumanResource> it){
+        List<String> resourceValues = new LinkedList<String>();
+
+        while(it.hasNext()){
+            HumanResource next = it.next();
+            resourceValues.add(next.getId() + " - " + next.getName());
+        }
+
+        return resourceValues;
+    }
+
+    private void updateBoxes(HumanResourceGroup managedGroup){
+        if(managedGroup == manager.getDefaultGroup()) {
+            resourceToAddField.reloadValues(new LinkedList<String>());
+            resourceToSetLeaderField.reloadValues(new LinkedList<String>());
+            resourceToRemoveField.reloadValues(new LinkedList<String>());
+        }else {
+            resourceToAddField.reloadValues(getResourceValuesEnumerator(manager.getDefaultGroup().getSubordinates()));
+            resourceToSetLeaderField.reloadValues(getResourceValuesEnumerator(managedGroup.getSubordinates()));
+            resourceToRemoveField.reloadValues(getResourceValuesEnumerator(managedGroup.getGroupElementsIt()));
+        }
+    }
+
+
+
 }

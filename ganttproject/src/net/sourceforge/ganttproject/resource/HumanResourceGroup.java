@@ -1,5 +1,6 @@
 package net.sourceforge.ganttproject.resource;
 
+
 import java.util.*;
 
 public class HumanResourceGroup {
@@ -50,9 +51,18 @@ public class HumanResourceGroup {
       this.subordinates.add(subordinate);
   }
 
-  public void deleteSubordinate(HumanResource subordinate){
+  public void removeSubordinate(HumanResource subordinate){
       this.subordinates.remove(subordinate);
   }
+
+  public void removeElement(HumanResource element){
+    if(leader == element){
+      unsetLeader();
+    }else{
+      removeSubordinate(element);
+    }
+  }
+
 
   /**
    * If the group has no leader, it passes the leadership to the first added subordinate
@@ -86,9 +96,7 @@ public class HumanResourceGroup {
 
   // Returns leader and subordinates
   public Iterator<HumanResource> getGroupElementsIt(){
-    List newList = new LinkedList<HumanResource>(subordinates);
-    newList.add(0,leader);
-    return newList.iterator();
+    return getGroupElements().iterator();
   }
 
   public List<HumanResource> getGroupElements(){

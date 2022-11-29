@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Iterator;
 
 import com.google.common.collect.Lists;
 
@@ -42,13 +43,20 @@ public class DefaultEnumerationOption<T> extends GPAbstractOption<String> implem
     reloadValues(Arrays.asList(values));
   }
 
-  protected void reloadValues(List<T> values) {
+  public void reloadValues(List<T> values) {
+    reloadValues(values.iterator());
+  }
+
+  public void reloadValues(Iterator<T> valuesIt) {
     List<String> oldValues = Lists.newArrayList(myValues);
     myValues.clear();
     myStringValue_ObjectValue.clear();
-    for (T value : values) {
-      myStringValue_ObjectValue.put(objectToString(value), value);
+
+    while(valuesIt.hasNext()){
+      T next = valuesIt.next();
+      myStringValue_ObjectValue.put(objectToString(next), next);
     }
+
     myValues.addAll(myStringValue_ObjectValue.keySet());
     getPropertyChangeSupport().firePropertyChange(EnumerationOption.VALUE_SET, oldValues, myValues);
   }

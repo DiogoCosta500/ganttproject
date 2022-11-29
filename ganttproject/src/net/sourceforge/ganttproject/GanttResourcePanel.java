@@ -289,7 +289,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
    * Return the list of the person
    */
   public List<HumanResource> getPeople() {
-    return getTreeModel().getAllResouces();
+    return getTreeModel().getAllResources();
   }
 
   public ResourceTreeTable getResourceTreeTable() {
@@ -304,7 +304,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
    * Return the number of people on the list
    */
   public int nbPeople() {
-    return getTreeModel().getAllResouces().size();
+    return getTreeModel().getAllResources().size();
   }
 
   /**
