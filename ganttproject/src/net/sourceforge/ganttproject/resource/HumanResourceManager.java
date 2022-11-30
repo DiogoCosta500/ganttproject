@@ -300,6 +300,7 @@ public class HumanResourceManager {
   public void remove(HumanResource resource) {
     fireResourcesRemoved(new HumanResource[] { resource });
     resources.remove(resource);
+    resource.getGroup().removeElement(resource);
   }
 
   public void remove(HumanResource resource, GPUndoManager myUndoManager) {
@@ -309,6 +310,7 @@ public class HumanResourceManager {
       public void run() {
         fireResourcesRemoved(new HumanResource[] { res });
         resources.remove(res);
+        res.getGroup().removeElement(res);
       }
     });
   }
@@ -381,7 +383,6 @@ public class HumanResourceManager {
 
   }
 
-  // VER SE É PRECISO ATUALIZAR
   public Map<HumanResource, HumanResource> importData(HumanResourceManager hrManager, HumanResourceMerger merger) {
     Map<HumanResource, HumanResource> foreign2native = new HashMap<HumanResource, HumanResource>();
     List<HumanResource> foreignResources = hrManager.getResources();

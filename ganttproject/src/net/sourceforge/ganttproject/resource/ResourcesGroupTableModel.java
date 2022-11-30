@@ -55,8 +55,6 @@ public class ResourcesGroupTableModel extends AbstractTableModel {
 
   private final HumanResourceGroup myGroup;
 
-  private boolean isChanged = false;
-
   public ResourcesGroupTableModel(HumanResourceGroup group) {
     myGroup = group;
     myAssignments = group.getGroupElements();
@@ -115,62 +113,16 @@ public class ResourcesGroupTableModel extends AbstractTableModel {
 
   @Override
   public boolean isCellEditable(int row, int col) {
-    boolean result = col > 0;
-    if (result) {
-      result = (col == 2 ? row < myAssignments.size() : row <= myAssignments.size()) || col == 3 || col == 4;
-    }
-    return result;
+    return false;
   }
-
-
-  /*public void setValueAt(HumanResource resource, int row, int col) {
-    if (row >= 0) {
-      if (row >= myAssignments.size())
-        createGroupAssigment(resource);
-    } else {
-      throw new IllegalArgumentException("I can't set data in row=" + row);
-    }
-    isChanged = true;
-  }*/
 
   private void createGroupAssigment(HumanResource resource) {
     myAssignments.add(resource);
     fireTableRowsInserted(myAssignments.size(),myAssignments.size());
-
-    /*if (value instanceof HumanResource) {
-      ResourceAssignment newAssignment = myMutator.addAssignment((HumanResource) value);
-
-      boolean coord = false;          // FAZER PARA LEADER DO GROUP
-      if (myAssignments.isEmpty())
-        coord = true;
-      newAssignment.setCoordinator(coord);
-
-      newAssignment.setRoleForAssignment(newAssignment.getResource().getRole());
-      myAssignments.add(newAssignment);
-      fireTableRowsInserted(myAssignments.size(), myAssignments.size());
-    }*/
   }
 
   public List<HumanResource> getResourcesGroupAssignments() {
     return Collections.unmodifiableList(myAssignments);
   }
-
-  /*public boolean isChanged() {
-    return isChanged;
-  }*/
-
-  /*public void delete(int[] selectedRows) {
-    List<ResourceAssignment> selected = new ArrayList<ResourceAssignment>();
-    for (int row : selectedRows) {
-      if (row < myAssignments.size()) {
-        selected.add(myAssignments.get(row));
-      }
-    }
-    for (ResourceAssignment ra : selected) {
-      ra.delete();
-    }
-    myAssignments.removeAll(selected);
-    fireTableDataChanged();
-  }*/
 
 }

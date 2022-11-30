@@ -81,12 +81,16 @@ public class GanttDialogGroup extends JPanel {
                 String groupId = manageGroupNameField.getValue().split("\\s+")[0];
                 HumanResourceGroup managedGroup = (HumanResourceGroup) innerManager.getById(Integer.parseInt(groupId));
 
-                String resourceName = (String) resourceToAddField.getValue();
-                HumanResource resource = innerManager.getResource(resourceName);
+                String resourceId = ((EnumerationOption) resourceToAddField).getValue().split("\\s+")[0];
+                HumanResource resource = innerManager.getById(Integer.parseInt(resourceId));
 
                 resource.getGroup().removeElement(resource);
                 resource.setGroup(managedGroup);
                 managedGroup.addSubordinate(resource);
+
+                if( resourceId.equals(Integer.toString(pdEditingPerson.getId())) ) {
+                    personGroupField.setValue(managedGroup.getId() + " - " + managedGroup.getName());
+                }
 
                 updateBoxes(managedGroup);
             }
@@ -98,11 +102,12 @@ public class GanttDialogGroup extends JPanel {
                 String groupId = manageGroupNameField.getValue().split("\\s+")[0];
                 HumanResourceGroup managedGroup = (HumanResourceGroup) innerManager.getById(Integer.parseInt(groupId));
 
-                String resourceName = (String) resourceToRemoveField.getValue();
-                HumanResource resource = innerManager.getResource(resourceName);
+                String resourceId = ((EnumerationOption) resourceToRemoveField).getValue().split("\\s+")[0];
+                HumanResource resource = innerManager.getById(Integer.parseInt(resourceId));
 
                 managedGroup.removeElement(resource);
                 innerManager.getDefaultGroup().addSubordinate(resource);
+                resource.setGroup(innerManager.getDefaultGroup());
 
                 updateBoxes(managedGroup);
             }
@@ -111,17 +116,18 @@ public class GanttDialogGroup extends JPanel {
         myMakeLeaderAction = new GPAction("Make Leader"){
             @Override
             public void actionPerformed(ActionEvent e) {
-                String groupId = manageGroupNameField.getValue().split("\\s+")[0];
+                String groupId =  manageGroupNameField.getValue().split("\\s+")[0];
                 HumanResourceGroup managedGroup = (HumanResourceGroup) innerManager.getById(Integer.parseInt(groupId));
 
-                String resourceName = (String) resourceToSetLeaderField.getValue();
-                HumanResource resource = innerManager.getResource(resourceName);
+                String resourceId = ((EnumerationOption) resourceToSetLeaderField).getValue().split("\\s+")[0];
+                HumanResource resource = innerManager.getById(Integer.parseInt(resourceId));
 
                 HumanResource oldLeader = managedGroup.getLeader();
                 managedGroup.unsetLeader();
                 if(oldLeader != null)
                     managedGroup.addSubordinate(oldLeader);
                 managedGroup.setLeader(resource);
+                managedGroup.removeSubordinate(resource);
 
                 updateBoxes(managedGroup);
             }
@@ -186,6 +192,8 @@ public class GanttDialogGroup extends JPanel {
                     HumanResource p = it.next();
                     p.setGroup(innerManager.getDefaultGroup());
                 }
+                if( pdEditingPerson.getGroup() == group)
+                    pdForm.getOption("colGroup").setValue("0 - none");
                 innerManager.removeGroupById(Integer.parseInt(groupId));
             }
         };
