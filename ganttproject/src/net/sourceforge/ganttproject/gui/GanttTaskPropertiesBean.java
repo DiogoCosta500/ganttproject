@@ -77,7 +77,7 @@ public class GanttTaskPropertiesBean extends JPanel {
   private GanttCalendar myThird;
 
   private JTabbedPane tabbedPane; // TabbedPane that includes the following four
-                                  // items
+  // items
 
   private JPanel generalPanel;
 
@@ -156,6 +156,20 @@ public class GanttTaskPropertiesBean extends JPanel {
   private JCheckBox myShowInTimeline;
   private AbstractAction myOnEarliestBeginToggle;
 
+  //--------------------------
+
+  private JPanel viewPanel;
+
+  private JTextField nameFieldView;
+
+  private JTextField tfWebLinkView;
+
+  private JButton bWebLinkView;
+
+  private JTextArea noteAreaNotesView;
+
+  private JPanel notesPanelView;
+
   public GanttTaskPropertiesBean(GanttTask[] selectedTasks, IGanttProject project, UIFacade uifacade) {
     myTaskScheduleDates = new TaskScheduleDatesPanel(uifacade);
     this.selectedTasks = selectedTasks;
@@ -167,11 +181,56 @@ public class GanttTaskPropertiesBean extends JPanel {
     myUIfacade = uifacade;
     init();
     setSelectedTaskProperties();
+    setSelectedTaskPropertiesView();
   }
 
   private static void addEmptyRow(JPanel form) {
     form.add(Box.createRigidArea(new Dimension(1, 10)));
     form.add(Box.createRigidArea(new Dimension(1, 10)));
+  }
+
+  private void constructViewPanel(){
+    final JPanel propertiesPanel = new JPanel(new SpringLayout());
+
+    //Name
+    propertiesPanel.add(new JLabel(language.getText("name")));
+    nameFieldView = new JTextField(20);
+    nameFieldView.setName("name_of_task");
+    nameFieldView.setEditable(false);
+    propertiesPanel.add(nameFieldView);
+
+    //Web Link
+    Box weblinkBox = Box.createHorizontalBox();
+    tfWebLinkView = new JTextField(20);
+    tfWebLinkView.setEditable(false);
+    weblinkBox.add(tfWebLinkView);
+    weblinkBox.add(Box.createHorizontalStrut(2));
+    bWebLinkView = new TestGanttRolloverButton(new ImageIcon(getClass().getResource("/icons/web_16.gif")));
+    bWebLinkView.setToolTipText(GanttProject.getToolTip(language.getText("openWebLink")));
+    weblinkBox.add(bWebLinkView);
+
+    bWebLinkView.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        // link to open the web link
+        if (!BrowserControl.displayURL(tfWebLinkView.getText())) {
+          GanttDialogInfo gdi = new GanttDialogInfo(null, GanttDialogInfo.ERROR, GanttDialogInfo.YES_OPTION,
+                  language.getText("msg4"), language.getText("error"));
+          gdi.setVisible(true);
+        }
+      }
+    });
+    propertiesPanel.add(new JLabel(language.getText("webLink")));
+    propertiesPanel.add(weblinkBox);
+
+    SpringUtilities.makeCompactGrid(propertiesPanel, propertiesPanel.getComponentCount() / 2, 2, 1, 1, 5, 5);
+
+    JPanel propertiesWrapper = new JPanel(new BorderLayout());
+    propertiesWrapper.add(propertiesPanel, BorderLayout.NORTH);
+    viewPanel = new JPanel(new SpringLayout());
+    viewPanel.add(propertiesWrapper);
+    viewPanel.add(notesPanelView);
+    SpringUtilities.makeCompactGrid(viewPanel, 1, 2, 1, 1, 10, 5);
   }
 
   /** Construct the general panel */
@@ -244,7 +303,7 @@ public class GanttTaskPropertiesBean extends JPanel {
         // link to open the web link
         if (!BrowserControl.displayURL(tfWebLink.getText())) {
           GanttDialogInfo gdi = new GanttDialogInfo(null, GanttDialogInfo.ERROR, GanttDialogInfo.YES_OPTION,
-              language.getText("msg4"), language.getText("error"));
+                  language.getText("msg4"), language.getText("error"));
           gdi.setVisible(true);
         }
       }
@@ -301,7 +360,7 @@ public class GanttTaskPropertiesBean extends JPanel {
 
   private void constructCustomColumnPanel() {
     myCustomColumnPanel = new CustomColumnsPanel(myProject.getTaskCustomColumnManager(), myUIfacade,
-        selectedTasks[0].getCustomValues(), myUIfacade.getTaskTree().getVisibleFields());
+            selectedTasks[0].getCustomValues(), myUIfacade.getTaskTree().getVisibleFields());
   }
 
   /** Construct the predecessors tabbed pane */
@@ -332,8 +391,24 @@ public class GanttTaskPropertiesBean extends JPanel {
     notesPanel = secondRowPanelNotes;
   }
 
+  private void constructNotesPanelView() {
+    secondRowPanelNotes = new JPanel(new BorderLayout());
+    UIUtil.createTitle(secondRowPanelNotes, "Notes...");
+
+    noteAreaNotesView = new JTextArea(8, 40);
+    noteAreaNotesView.setLineWrap(true);
+    noteAreaNotesView.setWrapStyleWord(true);
+    noteAreaNotesView.setBackground(new Color(1.0f, 1.0f, 1.0f));
+    noteAreaNotesView.setEditable(false);
+
+    scrollPaneNotes = new JScrollPane(noteAreaNotesView);
+    secondRowPanelNotes.add(scrollPaneNotes, BorderLayout.CENTER);
+    notesPanelView = secondRowPanelNotes;
+  }
+
   /** Initialize the widgets */
   private void init() {
+    constructNotesPanelView();
     constructNotesPanel();
 
     tabbedPane = new JTabbedPane() {
@@ -342,19 +417,22 @@ public class GanttTaskPropertiesBean extends JPanel {
         super.addTab(title, icon, UIUtil.contentPaneBorder((JComponent)component));
       }
     };
-    constructGeneralPanel();
 
+    constructViewPanel();
+    tabbedPane.addTab("View", new ImageIcon(getClass().getResource("/icons/properties_16.gif")), viewPanel);
+
+    constructGeneralPanel();
     tabbedPane.addTab(language.getText("general"), new ImageIcon(getClass().getResource("/icons/properties_16.gif")),
-        generalPanel);
+            generalPanel);
 
     constructPredecessorsPanel();
     tabbedPane.addTab(language.getText("predecessors"), new ImageIcon(getClass().getResource("/icons/relashion.gif")),
-        predecessorsPanel);
+            predecessorsPanel);
 
     constructResourcesPanel();
 
     tabbedPane.addTab(language.getCorrectedLabel("human"), new ImageIcon(getClass().getResource("/icons/res_16.gif")),
-        resourcesPanel);
+            resourcesPanel);
 
     setLayout(new BorderLayout());
 
@@ -362,7 +440,7 @@ public class GanttTaskPropertiesBean extends JPanel {
 
     constructCustomColumnPanel();
     tabbedPane.addTab(language.getText("customColumns"), new ImageIcon(getClass().getResource("/icons/custom.gif")),
-        myCustomColumnPanel.getComponent());
+            myCustomColumnPanel.getComponent());
     tabbedPane.addFocusListener(new FocusAdapter() {
       private boolean isFirstFocusGain = true;
 
@@ -407,8 +485,8 @@ public class GanttTaskPropertiesBean extends JPanel {
         mutator.setEnd(getEnd());
       }
       if (originalEarliestBeginDate == null && getThird() != null || originalEarliestBeginDate != null && getThird() == null
-          || originalEarliestBeginDate != null && !originalEarliestBeginDate.equals(getThird())
-          || originalEarliestBeginEnabled != getThirdDateConstraint()) {
+              || originalEarliestBeginDate != null && !originalEarliestBeginDate.equals(getThird())
+              || originalEarliestBeginEnabled != getThirdDateConstraint()) {
         mutator.setThird(getThird(), getThirdDateConstraint());
       }
 
@@ -426,9 +504,9 @@ public class GanttTaskPropertiesBean extends JPanel {
       }
       mutator.setColor(myTaskColorOption.getValue());
       if (this.originalShape == null && shapeComboBox.getSelectedIndex() != 0 || originalShape != null
-          && !this.originalShape.equals(shapeComboBox.getSelectedPaint())) {
+              && !this.originalShape.equals(shapeComboBox.getSelectedPaint())) {
         mutator.setShape(new ShapePaint((ShapePaint) shapeComboBox.getSelectedPaint(), Color.white,
-            myTaskColorOption.getValue()));
+                myTaskColorOption.getValue()));
       }
 
       mutator.commit();
@@ -443,6 +521,16 @@ public class GanttTaskPropertiesBean extends JPanel {
       }
     }
   }
+
+  private void setSelectedTaskPropertiesView() {
+    nameFieldView.setText(originalName);
+    setName(selectedTasks[0].toString());
+
+    noteAreaNotesView.setText(originalNotes);
+
+    tfWebLinkView.setText(originalWebLink);
+  }
+
 
   private void setSelectedTaskProperties() {
     myUnpluggedClone = selectedTasks[0].unpluggedClone();
