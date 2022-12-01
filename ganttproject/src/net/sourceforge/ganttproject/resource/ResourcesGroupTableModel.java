@@ -116,11 +116,6 @@ public class ResourcesGroupTableModel extends AbstractTableModel {
     return false;
   }
 
-  private void createGroupAssigment(HumanResource resource) {
-    myAssignments.add(resource);
-    fireTableRowsInserted(myAssignments.size(),myAssignments.size());
-  }
-
   public List<HumanResource> getResourcesGroupAssignments() {
     return Collections.unmodifiableList(myAssignments);
   }

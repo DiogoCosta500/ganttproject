@@ -352,7 +352,6 @@ public class HumanResourceManager {
   }
 
   public void fireAssignmentsChanged(HumanResource resource) {
-    System.out.println(resource);
     ResourceEvent e = new ResourceEvent(this, resource);
     for (Iterator<ResourceView> i = myViews.iterator(); i.hasNext();) {
       ResourceView nextView = i.next();
@@ -394,6 +393,7 @@ public class HumanResourceManager {
         nativeHR = new HumanResource(foreignHR.getName(), nextFreeId + createdResources.size(), this);
         nativeHR.setRole(myDefaultRole);
         nativeHR.setGroup(myDefaultGroup);
+        hrManager.getDefaultGroup().addSubordinate(nativeHR);
         createdResources.add(nativeHR);
       }
       foreign2native.put(foreignHR, nativeHR);

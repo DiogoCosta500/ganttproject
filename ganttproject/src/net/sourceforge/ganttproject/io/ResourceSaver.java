@@ -23,11 +23,13 @@ import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.resource.HumanResource;
+import net.sourceforge.ganttproject.resource.HumanResourceGroup;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import javax.xml.transform.sax.TransformerHandler;
 import java.math.BigDecimal;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +39,7 @@ class ResourceSaver extends SaverBase {
     startElement("resources", handler);
     saveCustomColumnDefinitions(project, handler);
     HumanResource[] resources = project.getHumanResourceManager().getResourcesArray();
+
     for (int i = 0; i < resources.length; i++) {
       HumanResource p = resources[i];
       addAttribute("id", p.getId(), attrs);
@@ -44,14 +47,36 @@ class ResourceSaver extends SaverBase {
       addAttribute("function", p.getRole().getPersistentID(), attrs);
       addAttribute("contacts", p.getMail(), attrs);
       addAttribute("phone", p.getPhone(), attrs);
+      addAttribute("group", p.getGroup().getId(), attrs);
       startElement("resource", attrs, handler);
       {
         saveRates(p, handler);
         saveCustomProperties(project, p, handler);
       }
       endElement("resource", handler);
+
+    }
+    Iterator<HumanResourceGroup> resourceGroupsIt = project.getHumanResourceManager().getGroupsIt();
+    while(resourceGroupsIt.hasNext()){
+      HumanResourceGroup next = resourceGroupsIt.next();
+      addAttribute("id", next.getId(), attrs);
+      addAttribute("name", next.getName(), attrs);
+      List<HumanResource> list = next.getGroupElements();
+      for(int j = 0; j < list.size(); j++){
+        HumanResource groupMember = list.get(j);
+        addAttribute("idMember"+j, groupMember.getId(), attrs);
+      }
+      startElement("resource", attrs, handler);
+      {
+        saveRates(next, handler);
+        saveCustomProperties(project, next, handler);
+      }
+      endElement("resource", handler);
     }
     endElement("resources", handler);
+
+
+
   }
 
   private void saveRates(HumanResource p, TransformerHandler handler) throws SAXException {
@@ -64,7 +89,7 @@ class ResourceSaver extends SaverBase {
   }
 
   private void saveCustomProperties(IGanttProject project, HumanResource resource, TransformerHandler handler)
-      throws SAXException {
+          throws SAXException {
     // CustomPropertyManager customPropsManager =
     // project.getHumanResourceManager().getCustomPropertyManager();
     AttributesImpl attrs = new AttributesImpl();
@@ -74,7 +99,7 @@ class ResourceSaver extends SaverBase {
       CustomPropertyDefinition nextDefinition = nextProperty.getDefinition();
       assert nextProperty != null : "WTF? null property in properties=" + properties;
       assert nextDefinition != null : "WTF? null property definition for property=" + i + "(value="
-          + nextProperty.getValueAsString() + ")";
+              + nextProperty.getValueAsString() + ")";
       if (nextProperty.getValue() != null && !nextProperty.getValue().equals(nextDefinition.getDefaultValue())) {
         addAttribute("definition-id", nextDefinition.getID(), attrs);
         addAttribute("value", nextProperty.getValueAsString(), attrs);

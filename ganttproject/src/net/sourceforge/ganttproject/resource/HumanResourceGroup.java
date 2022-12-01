@@ -4,13 +4,8 @@ package net.sourceforge.ganttproject.resource;
 import java.util.*;
 
 public class HumanResourceGroup extends HumanResource{
-
-  /*private String name;
-  private int id;*/
   private HumanResource leader;
   private List<HumanResource> subordinates;
-  //private HumanResourceManager myManager;
-  /*private final List<ResourceAssignment> myAssignments = new ArrayList<>();*/
 
 
 

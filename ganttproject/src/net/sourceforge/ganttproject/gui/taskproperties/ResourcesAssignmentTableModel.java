@@ -95,7 +95,6 @@ class ResourcesAssignmentTableModel extends AbstractTableModel {
 
   @Override
   public Object getValueAt(int row, int col) {
-    System.out.println("DEBUG - getValueAt");
     Object result;
     try{
       if (row >= 0) {
@@ -149,7 +148,6 @@ class ResourcesAssignmentTableModel extends AbstractTableModel {
 
   @Override
   public void setValueAt(Object value, int row, int col) {
-      System.out.println("DEBUG - SETVALUEAT");
       if (row >= 0) {
         if (row >= myAssignments.size()) {
           createAssignment(value);
@@ -165,7 +163,6 @@ class ResourcesAssignmentTableModel extends AbstractTableModel {
   }
 
   private void updateAssignment(Object value, int row, int col) {
-    System.out.println("DEBUG - updateAssignment");
     ResourceAssignment updateTarget = myAssignments.get(row);
     switch (col) {
     case 4: {
@@ -205,33 +202,23 @@ class ResourcesAssignmentTableModel extends AbstractTableModel {
   }
 
   private void createAssignment(Object value) {
-    System.out.println("DEBUG - createAssignment");
-    for(int i = 0; i < myAssignments.size(); i++){
-      System.out.println(myAssignments.get(i));
-    }
     if(value instanceof HumanResourceGroup){
-      System.out.println("INSTANCE OF HUMAN RESOURCE GROUP");
       ResourceAssignment newAssignment = myMutator.addAssignment((HumanResource) value);
       newAssignment.setLoad(100);
       boolean coord = myAssignments.isEmpty();
       newAssignment.setCoordinator(coord);
       newAssignment.setRoleForAssignment(new RoleManagerImpl().getDefaultRole());
-      System.out.println(myAssignments.size());
       myAssignments.add(newAssignment);
-      System.out.println(myAssignments.size());
       fireTableRowsInserted(myAssignments.size(), myAssignments.size());
     }
     else if (value instanceof HumanResource) {
-      System.out.println("INSTANCE OF HUMAN RESOURCE");
       ResourceAssignment newAssignment = myMutator.addAssignment((HumanResource) value);
       newAssignment.setLoad(100);
 
       boolean coord = myAssignments.isEmpty();
       newAssignment.setCoordinator(coord);
       newAssignment.setRoleForAssignment(newAssignment.getResource().getRole());
-      System.out.println(myAssignments.size());
       myAssignments.add(newAssignment);
-      System.out.println(myAssignments.size());
       fireTableRowsInserted(myAssignments.size(), myAssignments.size());
     }
   }

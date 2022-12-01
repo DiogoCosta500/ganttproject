@@ -16,6 +16,7 @@
 <!ELEMENT resource EMPTY >
 <!ATTLIST resource contacts CDATA #REQUIRED >
 <!ATTLIST resource function NMTOKEN #REQUIRED >
+<!ATTLIST resource group NMTOKEN #REQUIRED >
 <!ATTLIST resource id NMTOKEN #REQUIRED >
 <!ATTLIST resource name CDATA #REQUIRED >
 <!ATTLIST resource phone CDATA #REQUIRED >
